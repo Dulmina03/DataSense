@@ -1,32 +1,140 @@
-# Prerequisites
-*.d
+# ============================================================
+# DataSense - .NET 8 / Visual Studio
+# ============================================================
 
-# Compiled Object files
-*.slo
-*.lo
-*.o
-*.obj
+#############################
+# Build folders
+#############################
+**/bin/
+**/obj/
 
-# Precompiled Headers
-*.gch
-*.pch
+#############################
+# Visual Studio
+#############################
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
 
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
+#############################
+# VS Code
+#############################
+.vscode/
+*.code-workspace
 
-# Fortran module files
-*.mod
-*.smod
+#############################
+# Rider
+#############################
+.idea/
 
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
+#############################
+# Publish folders
+#############################
+publish/
+**/publish/
 
-# Executables
-*.exe
-*.out
-*.app
+#############################
+# Installer output
+#############################
+installer/output/
+
+#############################
+# Logs
+#############################
+logs/
+**/logs/
+
+*.log
+
+#############################
+# Temporary files
+#############################
+*.tmp
+*.temp
+*.cache
+
+#############################
+# OS files
+#############################
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+#############################
+# Database files
+#############################
+*.mdf
+*.ldf
+*.db
+*.db-shm
+*.db-wal
+
+#############################
+# NuGet
+#############################
+packages/
+*.nupkg
+*.snupkg
+
+#############################
+# Test Results
+#############################
+TestResults/
+
+#############################
+# BenchmarkDotNet
+#############################
+BenchmarkDotNet.Artifacts/
+
+#############################
+# Resharper
+#############################
+_ReSharper*/
+*.ReSharper
+
+#############################
+# DotCover
+#############################
+*.dotCover
+
+#############################
+# Crash Dumps
+#############################
+*.dmp
+
+#############################
+# Backup files
+#############################
+*.bak
+*.backup
+*.old
+*.orig
+
+#############################
+# Local configuration
+#############################
+appsettings.Development.json
+secrets.json
+
+#############################
+# Generated files
+#############################
+GeneratedFiles/
+
+#############################
+# Ignore publish profiles
+#############################
+*.pubxml.user
+
+#############################
+# Ignore local launch settings
+#############################
+**/Properties/launchSettings.json
+
+#############################
+# Keep these
+#############################
+!.gitignore
+!.gitattributes
+!README.md

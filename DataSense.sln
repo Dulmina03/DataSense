@@ -1,0 +1,40 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataSense.UI", "DataSense.UI\DataSense.UI.csproj", "{77A0F994-6BE2-4CB3-A0B0-634DD2058E57}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataSense.Core", "DataSense.Core\DataSense.Core.csproj", "{3ABED7EC-8C82-43DB-9C47-15583F67B0CC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataSense.Data", "DataSense.Data\DataSense.Data.csproj", "{A3392172-E05C-4D67-BEE8-514271F4EB5A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataSense.Infrastructure", "DataSense.Infrastructure\DataSense.Infrastructure.csproj", "{DB14A000-B123-459E-8AF5-4010E22A4443}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{77A0F994-6BE2-4CB3-A0B0-634DD2058E57}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{77A0F994-6BE2-4CB3-A0B0-634DD2058E57}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{77A0F994-6BE2-4CB3-A0B0-634DD2058E57}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{77A0F994-6BE2-4CB3-A0B0-634DD2058E57}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3ABED7EC-8C82-43DB-9C47-15583F67B0CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3ABED7EC-8C82-43DB-9C47-15583F67B0CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3ABED7EC-8C82-43DB-9C47-15583F67B0CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3ABED7EC-8C82-43DB-9C47-15583F67B0CC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A3392172-E05C-4D67-BEE8-514271F4EB5A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A3392172-E05C-4D67-BEE8-514271F4EB5A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A3392172-E05C-4D67-BEE8-514271F4EB5A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A3392172-E05C-4D67-BEE8-514271F4EB5A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DB14A000-B123-459E-8AF5-4010E22A4443}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DB14A000-B123-459E-8AF5-4010E22A4443}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DB14A000-B123-459E-8AF5-4010E22A4443}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DB14A000-B123-459E-8AF5-4010E22A4443}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

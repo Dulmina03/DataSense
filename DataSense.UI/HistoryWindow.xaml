@@ -1,0 +1,151 @@
+<Window x:Class="DataSense.UI.HistoryWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
+        Title="DataSense — Usage History" Height="720" Width="1120"
+        TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+        Background="{DynamicResource MaterialDesignPaper}"
+        FontFamily="{DynamicResource MaterialDesignFont}"
+        WindowStartupLocation="CenterOwner">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header Bar -->
+        <materialDesign:ColorZone Mode="PrimaryMid" Padding="16" Grid.Row="0">
+            <DockPanel>
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+                    <materialDesign:PackIcon Kind="History" Width="24" Height="24" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                    <TextBlock Text="Usage History &amp; Reports" VerticalAlignment="Center" FontSize="20" FontWeight="Bold"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" HorizontalAlignment="Right">
+                    <Button Style="{StaticResource MaterialDesignOutlinedButton}" Margin="0,0,8,0"
+                            Command="{Binding ExportToCsvCommand}" Foreground="White" BorderBrush="White"
+                            ToolTip="Export to CSV">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="FileDelimited" Margin="0,0,6,0"/>
+                            <TextBlock Text="Export CSV"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Style="{StaticResource MaterialDesignOutlinedButton}"
+                            Command="{Binding ExportToPdfCommand}" Foreground="White" BorderBrush="White"
+                            ToolTip="Export to PDF">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="FilePdf" Margin="0,0,6,0"/>
+                            <TextBlock Text="Export PDF"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </DockPanel>
+        </materialDesign:ColorZone>
+
+        <!-- Filters Row -->
+        <materialDesign:Card Grid.Row="1" Margin="16,16,16,0" Padding="16">
+            <DockPanel>
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+                    <TextBlock Text="Year:" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                    <ComboBox ItemsSource="{Binding YearOptions}"
+                              SelectedItem="{Binding SelectedYear}"
+                              Width="80" Margin="0,0,16,0"/>
+                    <TextBlock Text="Month:" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                    <ComboBox ItemsSource="{Binding MonthOptions}"
+                              SelectedIndex="{Binding SelectedMonthIndex}"
+                              Width="120" Margin="0,0,16,0"/>
+                    <Button Style="{StaticResource MaterialDesignRaisedButton}"
+                            Command="{Binding LoadCommand}"
+                            Content="Load" Width="80"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" HorizontalAlignment="Right">
+                    <materialDesign:Chip Margin="4,0">
+                        <TextBlock Text="{Binding MonthlyDownloaded, StringFormat='↓ {0}'}"/>
+                    </materialDesign:Chip>
+                    <materialDesign:Chip Margin="4,0">
+                        <TextBlock Text="{Binding MonthlyUploaded, StringFormat='↑ {0}'}"/>
+                    </materialDesign:Chip>
+                    <materialDesign:Chip Margin="4,0">
+                        <TextBlock Text="{Binding MonthlyTotal, StringFormat='Total: {0}'}"/>
+                    </materialDesign:Chip>
+                </StackPanel>
+            </DockPanel>
+        </materialDesign:Card>
+
+        <!-- Content Area -->
+        <Grid Grid.Row="2" Margin="16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="300"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Left: Chart + Daily table -->
+            <Grid Grid.Column="0" Margin="0,0,16,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="260"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Daily Bar Chart -->
+                <materialDesign:Card Grid.Row="0" Background="#0D1B2A" Padding="16" Margin="0,0,0,8">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="Daily Usage (MB)" Foreground="White" FontSize="15" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                        <lvc:CartesianChart Grid.Row="1"
+                                            Series="{Binding DailyChartSeries}"
+                                            XAxes="{Binding XAxes}"
+                                            YAxes="{Binding YAxes}"
+                                            DrawMarginFrame="{Binding HistoryDrawMarginFrame}"
+                                            Background="#0D1B2A"/>
+                    </Grid>
+                </materialDesign:Card>
+
+                <!-- Daily rows table -->
+                <materialDesign:Card Grid.Row="1" Padding="8" Margin="0,0,0,0">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="Daily Breakdown" FontSize="15" FontWeight="SemiBold" Margin="8,8,0,8"/>
+                        <ListView Grid.Row="1" ItemsSource="{Binding DailyRows}" SelectionMode="Single">
+                            <ListView.View>
+                                <GridView>
+                                    <GridViewColumn Header="Date" DisplayMemberBinding="{Binding Date}" Width="130"/>
+                                    <GridViewColumn Header="Downloaded" DisplayMemberBinding="{Binding Downloaded}" Width="105"/>
+                                    <GridViewColumn Header="Uploaded" DisplayMemberBinding="{Binding Uploaded}" Width="105"/>
+                                    <GridViewColumn Header="Total" DisplayMemberBinding="{Binding Total}" Width="105"/>
+                                </GridView>
+                            </ListView.View>
+                        </ListView>
+                    </Grid>
+                </materialDesign:Card>
+            </Grid>
+
+            <!-- Right: Per-app usage -->
+            <materialDesign:Card Grid.Column="1" Padding="16">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Text="Per-App Usage" FontSize="15" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                    <ListView Grid.Row="1" ItemsSource="{Binding ProcessRows}" SelectionMode="Single">
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn Header="Application" DisplayMemberBinding="{Binding ProcessName}" Width="120"/>
+                                <GridViewColumn Header="↓ DL" DisplayMemberBinding="{Binding DownloadedText}" Width="78"/>
+                                <GridViewColumn Header="↑ UL" DisplayMemberBinding="{Binding UploadedText}" Width="78"/>
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+                </Grid>
+            </materialDesign:Card>
+        </Grid>
+    </Grid>
+</Window>
