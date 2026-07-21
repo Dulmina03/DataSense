@@ -971,6 +971,43 @@
                                     </StackPanel>
                                     <ToggleButton Grid.Column="1" Style="{StaticResource MaterialDesignSwitchToggleButton}" IsChecked="{Binding IsNetSpeedMeterPinned}" Command="{Binding ToggleNetSpeedMeterPinnedCommand}"/>
                                 </Grid>
+
+                                <Separator Margin="0,16,0,16" Background="#1A202C"/>
+
+                                <!-- Customization Options (Color & Size) -->
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0">
+                                        <StackPanel Orientation="Horizontal">
+                                            <materialDesign:PackIcon Kind="Palette" Foreground="#81C784" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                            <TextBlock Text="Speed Meter Customization" FontSize="15" FontWeight="SemiBold" Foreground="White" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                        <TextBlock Text="Configure the font color and text size of the speed overlay." Foreground="Gray" Margin="26,2,0,0"/>
+                                    </StackPanel>
+                                    
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                        <!-- Color Selection -->
+                                        <ComboBox Width="110" Margin="0,0,12,0" 
+                                                  ItemsSource="{Binding NetSpeedMeterAvailableColors}"
+                                                  SelectedItem="{Binding SelectedNetSpeedMeterColor}"
+                                                  Style="{StaticResource MaterialDesignOutlinedComboBox}"
+                                                  materialDesign:HintAssist.Hint="Color"
+                                                  Foreground="White"
+                                                  BorderBrush="#33FFFFFF"/>
+                                        
+                                        <!-- Font Size Selection -->
+                                        <ComboBox Width="80" 
+                                                  ItemsSource="{Binding NetSpeedMeterAvailableFontSizes}"
+                                                  SelectedItem="{Binding SelectedNetSpeedMeterFontSize}"
+                                                  Style="{StaticResource MaterialDesignOutlinedComboBox}"
+                                                  materialDesign:HintAssist.Hint="Size"
+                                                  Foreground="White"
+                                                  BorderBrush="#33FFFFFF"/>
+                                    </StackPanel>
+                                </Grid>
                             </StackPanel>
                         </materialDesign:Card>
 

@@ -48,6 +48,35 @@ namespace DataSense.UI.ViewModels
         [ObservableProperty] private bool _isNetSpeedMeterEnabled;
         [ObservableProperty] private bool _isNetSpeedMeterPinned;
 
+        public string[] NetSpeedMeterAvailableColors => _netSpeedMeterService.AvailableColors;
+        public double[] NetSpeedMeterAvailableFontSizes => _netSpeedMeterService.AvailableFontSizes;
+
+        public string SelectedNetSpeedMeterColor
+        {
+            get => _netSpeedMeterService.SelectedColor;
+            set
+            {
+                if (_netSpeedMeterService.SelectedColor != value)
+                {
+                    _netSpeedMeterService.SelectedColor = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public double SelectedNetSpeedMeterFontSize
+        {
+            get => _netSpeedMeterService.SelectedFontSize;
+            set
+            {
+                if (_netSpeedMeterService.SelectedFontSize != value)
+                {
+                    _netSpeedMeterService.SelectedFontSize = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
         // Navigation
         [ObservableProperty] private int _selectedTabIndex = 0;
 

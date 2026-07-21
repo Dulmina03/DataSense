@@ -9,28 +9,23 @@
         Topmost="True"
         ShowInTaskbar="False"
         ResizeMode="NoResize"
-        Width="90"
-        Height="36"
+        SizeToContent="WidthAndHeight"
         WindowStartupLocation="Manual"
         MouseLeftButtonDown="Window_MouseLeftButtonDown">
 
-    <Window.Resources>
-        <conv:BoolToBrushConverter x:Key="BoolToBrushConverter"/>
-    </Window.Resources>
-
-    <Grid Background="Transparent">
+    <Border Background="Transparent" BorderThickness="0" Padding="6,4">
         <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
             <!-- Download Speed -->
             <StackPanel Orientation="Horizontal" Margin="0,1">
                 <TextBlock Text="▼" Foreground="#4FC3F7" FontSize="10" VerticalAlignment="Center" Margin="0,0,4,0" FontWeight="Bold"/>
                 <TextBlock x:Name="DownloadText"
                            Text="0 B/s"
-                           FontSize="11"
                            FontFamily="Segoe UI"
                            FontWeight="SemiBold"
                            VerticalAlignment="Center"
                            MinWidth="70"
-                           Foreground="{Binding IsDarkTheme, Converter={StaticResource BoolToBrushConverter}}"/>
+                           FontSize="{Binding SelectedFontSize}"
+                           Foreground="{Binding TextBrush}"/>
             </StackPanel>
 
             <!-- Upload Speed -->
@@ -38,13 +33,13 @@
                 <TextBlock Text="▲" Foreground="#EF5350" FontSize="10" VerticalAlignment="Center" Margin="0,0,4,0" FontWeight="Bold"/>
                 <TextBlock x:Name="UploadText"
                            Text="0 B/s"
-                           FontSize="11"
                            FontFamily="Segoe UI"
                            FontWeight="SemiBold"
                            VerticalAlignment="Center"
                            MinWidth="70"
-                           Foreground="{Binding IsDarkTheme, Converter={StaticResource BoolToBrushConverter}}"/>
+                           FontSize="{Binding SelectedFontSize}"
+                           Foreground="{Binding TextBrush}"/>
             </StackPanel>
         </StackPanel>
-    </Grid>
+    </Border>
 </Window>

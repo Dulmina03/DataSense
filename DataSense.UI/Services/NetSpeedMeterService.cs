@@ -20,6 +20,8 @@ namespace DataSense.UI.Services
         private bool _isEnabled;
         private bool _isPinnedToTaskbar;
         private bool _isDarkTheme = true;
+        private string _selectedColor = "Adaptive";
+        private double _selectedFontSize = 11;
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -28,6 +30,9 @@ namespace DataSense.UI.Services
             "DataSense", "speedmeter.json");
 
         public bool IsEnabled => _isEnabled;
+
+        public string[] AvailableColors { get; } = { "Adaptive", "White", "Black", "Cyan", "Green", "Yellow", "Orange", "Red" };
+        public double[] AvailableFontSizes { get; } = { 9, 10, 11, 12, 14, 16, 18, 20 };
 
         public bool IsPinnedToTaskbar
         {
@@ -53,7 +58,61 @@ namespace DataSense.UI.Services
                 {
                     _isDarkTheme = value;
                     OnPropertyChanged();
+                    OnPropertyChanged(nameof(TextBrush));
                 }
+            }
+        }
+
+        public string SelectedColor
+        {
+            get => _selectedColor;
+            set
+            {
+                if (_selectedColor != value)
+                {
+                    _selectedColor = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(TextBrush));
+                    SaveState();
+                }
+            }
+        }
+
+        public double SelectedFontSize
+        {
+            get => _selectedFontSize;
+            set
+            {
+                if (_selectedFontSize != value)
+                {
+                    _selectedFontSize = value;
+                    OnPropertyChanged();
+                    SaveState();
+                    // Positioning might need readjustment since size changed
+                    UpdateWindowPosition();
+                }
+            }
+        }
+
+        public System.Windows.Media.Brush TextBrush
+        {
+            get
+            {
+                if (_selectedColor == "Adaptive")
+                {
+                    return _isDarkTheme ? System.Windows.Media.Brushes.White : System.Windows.Media.Brushes.Black;
+                }
+                return _selectedColor switch
+                {
+                    "White" => System.Windows.Media.Brushes.White,
+                    "Black" => System.Windows.Media.Brushes.Black,
+                    "Cyan" => new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(79, 195, 247)), // #4FC3F7
+                    "Green" => new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(129, 199, 132)), // #81C784
+                    "Yellow" => new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 235, 59)), // #FFEB3B
+                    "Orange" => new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 183, 77)), // #FFB74D
+                    "Red" => new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(239, 83, 80)), // #EF5350
+                    _ => System.Windows.Media.Brushes.White
+                };
             }
         }
 
@@ -107,6 +166,12 @@ namespace DataSense.UI.Services
                         
                     if (doc.RootElement.TryGetProperty("isPinned", out var pinnedProp))
                         _isPinnedToTaskbar = pinnedProp.GetBoolean();
+
+                    if (doc.RootElement.TryGetProperty("selectedColor", out var colorProp))
+                        _selectedColor = colorProp.GetString() ?? "Adaptive";
+
+                    if (doc.RootElement.TryGetProperty("selectedFontSize", out var sizeProp))
+                        _selectedFontSize = sizeProp.GetDouble();
                 }
             }
             catch { }
@@ -121,7 +186,9 @@ namespace DataSense.UI.Services
                 var state = new
                 {
                     enabled = _isEnabled,
-                    isPinned = _isPinnedToTaskbar
+                    isPinned = _isPinnedToTaskbar,
+                    selectedColor = _selectedColor,
+                    selectedFontSize = _selectedFontSize
                 };
                 File.WriteAllText(SettingsPath, JsonSerializer.Serialize(state, options));
             }
