@@ -9,6 +9,7 @@ namespace DataSense.UI
     public partial class NetSpeedMeterWindow : Window
     {
         private const int GWL_EXSTYLE = -20;
+        private const int GWL_HWNDPARENT = -8;
         private const int WS_EX_NOACTIVATE = 0x08000000;
         private const int WS_EX_TRANSPARENT = 0x00000020;
 
@@ -17,6 +18,23 @@ namespace DataSense.UI
 
         [DllImport("user32.dll")]
         private static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
+
+        [DllImport("user32.dll", EntryPoint = "SetWindowLongPtr")]
+        private static extern IntPtr SetWindowLongPtr64(IntPtr hWnd, int nIndex, IntPtr dwNewLong);
+
+        [DllImport("user32.dll", EntryPoint = "SetWindowLong")]
+        private static extern int SetWindowLong32(IntPtr hWnd, int nIndex, int dwNewLong);
+
+        private static IntPtr SetWindowLongPtr(IntPtr hWnd, int nIndex, IntPtr dwNewLong)
+        {
+            if (IntPtr.Size == 8)
+                return SetWindowLongPtr64(hWnd, nIndex, dwNewLong);
+            else
+                return new IntPtr(SetWindowLong32(hWnd, nIndex, dwNewLong.ToInt32()));
+        }
+
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
 
         // Allow dragging the overlay around the screen
         private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -69,6 +87,15 @@ namespace DataSense.UI
         protected override void OnSourceInitialized(EventArgs e)
         {
             base.OnSourceInitialized(e);
+
+            var helper = new WindowInteropHelper(this);
+
+            // Find Windows Taskbar handle and set it as the owner of this window
+            IntPtr taskbarHWnd = FindWindow("Shell_TrayWnd", null);
+            if (taskbarHWnd != IntPtr.Zero)
+            {
+                SetWindowLongPtr(helper.Handle, GWL_HWNDPARENT, taskbarHWnd);
+            }
 
             // Apply style depending on initial pinned status
             if (DataContext is Services.NetSpeedMeterService service)

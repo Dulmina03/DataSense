@@ -45,6 +45,7 @@ namespace DataSense.UI.Services
                     OnPropertyChanged();
                     SaveState();
                     UpdateWindowPosition();
+                    _meterWindow?.SetClickThrough(_isPinnedToTaskbar);
                 }
             }
         }
@@ -138,6 +139,7 @@ namespace DataSense.UI.Services
                         _meterWindow.DataContext = this;
                     }
                     _meterWindow.Show();
+                    _meterWindow.SetClickThrough(_isPinnedToTaskbar);
                     UpdateWindowPosition();
                 }
                 else
