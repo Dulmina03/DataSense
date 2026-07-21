@@ -352,20 +352,20 @@ namespace DataSense.Core.Services
 
     public class PersistedMinuteBucket
     {
-        public string Time { get; set; }
+        public string Time { get; set; } = string.Empty;
         public long Downloaded { get; set; }
         public long Uploaded { get; set; }
     }
 
     public class PersistedProcessBucket
     {
-        public string Time { get; set; }
-        public Dictionary<string, PersistedUsage> Processes { get; set; }
+        public string Time { get; set; } = string.Empty;
+        public Dictionary<string, PersistedUsage> Processes { get; set; } = new();
     }
 
     public class PersistedBucketsPayload
     {
-        public List<PersistedMinuteBucket> MinuteBuckets { get; set; }
-        public List<PersistedProcessBucket> ProcessBuckets { get; set; }
+        public List<PersistedMinuteBucket> MinuteBuckets { get; set; } = new();
+        public List<PersistedProcessBucket> ProcessBuckets { get; set; } = new();
     }
 }

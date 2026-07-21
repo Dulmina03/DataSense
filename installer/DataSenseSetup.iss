@@ -16,6 +16,7 @@ DefaultGroupName={#MyAppName}
 AllowNoIcons=yes
 OutputDir=output
 OutputBaseFilename=DataSenseSetup
+SetupIconFile=..\DataSense.UI\datasense_icon.ico
 Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern

@@ -28,4 +28,8 @@
     <ApplicationIcon>datasense_icon.ico</ApplicationIcon>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Resource Include="datasense_icon.png" />
+  </ItemGroup>
+
 </Project>

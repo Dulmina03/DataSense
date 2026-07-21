@@ -10,7 +10,7 @@
         xmlns:converters="clr-namespace:DataSense.UI.Converters"
         mc:Ignorable="d"
         Title="Data Usage &amp; Traffic Analyzer" Height="780" Width="1220" MinWidth="900" MinHeight="600"
-        Icon="datasense_icon.ico"
+        Icon="datasense_icon.png"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
         TextElement.FontWeight="Regular"
         TextElement.FontSize="13"
