@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -156,6 +158,7 @@ namespace DataSense.Core.Services
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
+            LoadMinuteBuckets();
             Task.Run(() => FlushLoop(_cts.Token));
             Task.Run(() => SpeedLoop(_cts.Token));
             Task.Run(() => BucketCleanupLoop(_cts.Token));
@@ -215,6 +218,7 @@ namespace DataSense.Core.Services
 
                 var processDict = currentStats.ToDictionary(k => k.Key, v => v.Value);
                 await repo.SaveUsageAsync(DateTime.Now, downloaded, uploaded, processDict);
+                SaveMinuteBuckets();
             }
             catch (Exception ex)
             {
@@ -243,5 +247,125 @@ namespace DataSense.Core.Services
 
         private static DateTime TruncateToMinute(DateTime dt)
             => new DateTime(dt.Year, dt.Month, dt.Day, dt.Hour, dt.Minute, 0, dt.Kind);
+
+        private void SaveMinuteBuckets()
+        {
+            try
+            {
+                var appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+                var dir = Path.Combine(appData, "DataSense");
+                Directory.CreateDirectory(dir);
+
+                var cutoff = DateTime.Now.AddHours(-25);
+
+                var bucketsToSave = _minuteBuckets
+                    .Where(kvp => kvp.Key >= cutoff)
+                    .Select(kvp => new PersistedMinuteBucket
+                    {
+                        Time = kvp.Key.ToString("o"),
+                        Downloaded = kvp.Value.Downloaded,
+                        Uploaded = kvp.Value.Uploaded
+                    }).ToList();
+
+                var processBucketsToSave = _minuteProcessBuckets
+                    .Where(kvp => kvp.Key >= cutoff)
+                    .Select(kvp => new PersistedProcessBucket
+                    {
+                        Time = kvp.Key.ToString("o"),
+                        Processes = kvp.Value.ToDictionary(
+                            p => p.Key,
+                            p => new PersistedUsage { Downloaded = p.Value.Downloaded, Uploaded = p.Value.Uploaded }
+                        )
+                    }).ToList();
+
+                var payload = new PersistedBucketsPayload
+                {
+                    MinuteBuckets = bucketsToSave,
+                    ProcessBuckets = processBucketsToSave
+                };
+
+                var path = Path.Combine(dir, "minute_buckets.json");
+                var json = JsonSerializer.Serialize(payload);
+                File.WriteAllText(path, json);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error saving minute buckets to file");
+            }
+        }
+
+        private void LoadMinuteBuckets()
+        {
+            try
+            {
+                var appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+                var path = Path.Combine(appData, "DataSense", "minute_buckets.json");
+
+                if (File.Exists(path))
+                {
+                    var json = File.ReadAllText(path);
+                    var payload = JsonSerializer.Deserialize<PersistedBucketsPayload>(json);
+                    if (payload != null)
+                    {
+                        var cutoff = DateTime.Now.AddHours(-25);
+
+                        if (payload.MinuteBuckets != null)
+                        {
+                            foreach (var b in payload.MinuteBuckets)
+                            {
+                                if (DateTime.TryParse(b.Time, out var time) && time >= cutoff)
+                                {
+                                    _minuteBuckets[time] = (b.Downloaded, b.Uploaded);
+                                }
+                            }
+                        }
+
+                        if (payload.ProcessBuckets != null)
+                        {
+                            foreach (var pb in payload.ProcessBuckets)
+                            {
+                                if (DateTime.TryParse(pb.Time, out var time) && time >= cutoff)
+                                {
+                                    var dict = _minuteProcessBuckets.GetOrAdd(time, _ => new ConcurrentDictionary<string, (long, long)>());
+                                    foreach (var proc in pb.Processes)
+                                    {
+                                        dict[proc.Key] = (proc.Value.Downloaded, proc.Value.Uploaded);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error loading minute buckets from file");
+            }
+        }
+    }
+
+    public class PersistedUsage
+    {
+        public long Downloaded { get; set; }
+        public long Uploaded { get; set; }
+    }
+
+    public class PersistedMinuteBucket
+    {
+        public string Time { get; set; }
+        public long Downloaded { get; set; }
+        public long Uploaded { get; set; }
+    }
+
+    public class PersistedProcessBucket
+    {
+        public string Time { get; set; }
+        public Dictionary<string, PersistedUsage> Processes { get; set; }
+    }
+
+    public class PersistedBucketsPayload
+    {
+        public List<PersistedMinuteBucket> MinuteBuckets { get; set; }
+        public List<PersistedProcessBucket> ProcessBuckets { get; set; }
     }
 }

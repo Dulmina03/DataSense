@@ -74,10 +74,10 @@ namespace DataSense.UI.ViewModels
         [ObservableProperty] private string _weeklyUsageText = "0 B";
 
         // Custom time-of-day period search with AM/PM support
-        [ObservableProperty] private string _customStartHour = "09";
-        [ObservableProperty] private string _customStartMinute = "30";
+        [ObservableProperty] private string _customStartHour = "00";
+        [ObservableProperty] private string _customStartMinute = "00";
         [ObservableProperty] private string _customStartAmPm = "AM";
-        [ObservableProperty] private string _customEndHour = "10";
+        [ObservableProperty] private string _customEndHour = "00";
         [ObservableProperty] private string _customEndMinute = "00";
         [ObservableProperty] private string _customEndAmPm = "AM";
         [ObservableProperty] private string _customPeriodTotalText = "0 B";
@@ -87,12 +87,12 @@ namespace DataSense.UI.ViewModels
         public ObservableCollection<ProcessUsageDisplay> CustomPeriodProcesses { get; } = new();
         public string[] AmPmOptions { get; } = new[] { "AM", "PM" };
 
-        partial void OnCustomStartHourChanged(string value) => _ = QueryCustomPeriodUsageAsync();
-        partial void OnCustomStartMinuteChanged(string value) => _ = QueryCustomPeriodUsageAsync();
-        partial void OnCustomStartAmPmChanged(string value) => _ = QueryCustomPeriodUsageAsync();
-        partial void OnCustomEndHourChanged(string value) => _ = QueryCustomPeriodUsageAsync();
-        partial void OnCustomEndMinuteChanged(string value) => _ = QueryCustomPeriodUsageAsync();
-        partial void OnCustomEndAmPmChanged(string value) => _ = QueryCustomPeriodUsageAsync();
+        partial void OnCustomStartHourChanged(string value) { SaveCustomSettings(); _ = QueryCustomPeriodUsageAsync(); }
+        partial void OnCustomStartMinuteChanged(string value) { SaveCustomSettings(); _ = QueryCustomPeriodUsageAsync(); }
+        partial void OnCustomStartAmPmChanged(string value) { SaveCustomSettings(); _ = QueryCustomPeriodUsageAsync(); }
+        partial void OnCustomEndHourChanged(string value) { SaveCustomSettings(); _ = QueryCustomPeriodUsageAsync(); }
+        partial void OnCustomEndMinuteChanged(string value) { SaveCustomSettings(); _ = QueryCustomPeriodUsageAsync(); }
+        partial void OnCustomEndAmPmChanged(string value) { SaveCustomSettings(); _ = QueryCustomPeriodUsageAsync(); }
 
         // Alerts / Limit settings
         [ObservableProperty] private double _monthlyLimitGb;
@@ -248,6 +248,9 @@ namespace DataSense.UI.ViewModels
             };
             _statsRefreshTimer.Tick += async (s, e) => await RefreshStatsAsync();
             _statsRefreshTimer.Start();
+
+            // Load custom settings
+            LoadCustomSettings();
 
             // Initial load
             var _ = RefreshStatsAsync();
@@ -485,11 +488,21 @@ namespace DataSense.UI.ViewModels
             result = default;
             if (!int.TryParse(hour?.Trim(), out int h)) return false;
             if (!int.TryParse(minute?.Trim(), out int m)) return false;
-            if (h < 1 || h > 12 || m < 0 || m > 59) return false;
+            if (h < 0 || h > 12 || m < 0 || m > 59) return false;
 
-            // Convert 12-hour to 24-hour
-            if (ampm?.Trim().ToUpper() == "PM" && h != 12) h += 12;
-            else if (ampm?.Trim().ToUpper() == "AM" && h == 12) h = 0;
+            // Convert 12-hour/24-hour hybrid to 24-hour
+            if (h == 0)
+            {
+                h = 0;
+            }
+            else if (ampm?.Trim().ToUpper() == "PM" && h != 12)
+            {
+                h += 12;
+            }
+            else if (ampm?.Trim().ToUpper() == "AM" && h == 12)
+            {
+                h = 0;
+            }
 
             result = new TimeSpan(h, m, 0);
             return true;
@@ -670,6 +683,88 @@ namespace DataSense.UI.ViewModels
                 len /= 1024;
             }
             return $"{len:0.##} {sizes[order]}";
+        }
+
+        private bool _isInitializingCustomSettings;
+
+        private class CustomPeriodSettings
+        {
+            public string StartHour { get; set; } = "00";
+            public string StartMinute { get; set; } = "00";
+            public string StartAmPm { get; set; } = "AM";
+            public string EndHour { get; set; } = "00";
+            public string EndMinute { get; set; } = "00";
+            public string EndAmPm { get; set; } = "AM";
+            public bool IsSet { get; set; } = false;
+        }
+
+        private void SaveCustomSettings()
+        {
+            if (_isInitializingCustomSettings) return;
+            try
+            {
+                var appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+                var dir = Path.Combine(appData, "DataSense");
+                Directory.CreateDirectory(dir);
+                var path = Path.Combine(dir, "custom_period_settings.json");
+
+                var settings = new CustomPeriodSettings
+                {
+                    StartHour = CustomStartHour,
+                    StartMinute = CustomStartMinute,
+                    StartAmPm = CustomStartAmPm,
+                    EndHour = CustomEndHour,
+                    EndMinute = CustomEndMinute,
+                    EndAmPm = CustomEndAmPm,
+                    IsSet = true
+                };
+
+                var json = System.Text.Json.JsonSerializer.Serialize(settings);
+                File.WriteAllText(path, json);
+            }
+            catch
+            {
+                // Ignore errors
+            }
+        }
+
+        private void LoadCustomSettings()
+        {
+            _isInitializingCustomSettings = true;
+            try
+            {
+                var appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+                var path = Path.Combine(appData, "DataSense", "custom_period_settings.json");
+
+                if (File.Exists(path))
+                {
+                    var json = File.ReadAllText(path);
+                    var settings = System.Text.Json.JsonSerializer.Deserialize<CustomPeriodSettings>(json);
+                    if (settings != null && settings.IsSet)
+                    {
+                        CustomStartHour = settings.StartHour;
+                        CustomStartMinute = settings.StartMinute;
+                        CustomStartAmPm = settings.StartAmPm;
+                        CustomEndHour = settings.EndHour;
+                        CustomEndMinute = settings.EndMinute;
+                        CustomEndAmPm = settings.EndAmPm;
+                        _isInitializingCustomSettings = false;
+                        return;
+                    }
+                }
+            }
+            catch
+            {
+                // Fallback to defaults
+            }
+
+            CustomStartHour = "00";
+            CustomStartMinute = "00";
+            CustomStartAmPm = "AM";
+            CustomEndHour = "00";
+            CustomEndMinute = "00";
+            CustomEndAmPm = "AM";
+            _isInitializingCustomSettings = false;
         }
     }
 

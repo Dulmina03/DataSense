@@ -10,6 +10,7 @@
         xmlns:converters="clr-namespace:DataSense.UI.Converters"
         mc:Ignorable="d"
         Title="Data Usage &amp; Traffic Analyzer" Height="780" Width="1220" MinWidth="900" MinHeight="600"
+        Icon="datasense_icon.ico"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
         TextElement.FontWeight="Regular"
         TextElement.FontSize="13"
@@ -172,21 +173,19 @@
                 <Grid Margin="12,0,24,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <!-- Hamburger toggle button -->
+                    <!-- Sidebar Toggle Button (small and simple DockLeft icon) -->
                     <Button Grid.Column="0"
                             Command="{Binding ToggleSidebarCommand}"
                             Style="{StaticResource MaterialDesignIconButton}"
-                            Width="40" Height="40"
+                            Width="32" Height="32"
                             Foreground="#A0AEC0"
                             VerticalAlignment="Center"
-                            Margin="0,0,8,0"
-                            ToolTip="Toggle Navigation">
-                        <materialDesign:PackIcon Kind="Menu" Width="22" Height="22"/>
+                            Margin="0,0,12,0"
+                            ToolTip="Toggle Sidebar">
+                        <materialDesign:PackIcon Kind="DockLeft" Width="18" Height="18"/>
                     </Button>
 
                     <!-- Title based on navigation selection -->
@@ -211,28 +210,6 @@
                             </Style>
                         </TextBlock.Style>
                     </TextBlock>
-
-                    <!-- Search pill in middle -->
-                    <materialDesign:Card Grid.Column="1" HorizontalAlignment="Right" Width="240" Height="36" UniformCornerRadius="18" Background="#171E2D" BorderThickness="0" Margin="0,0,24,0">
-                        <Grid Margin="12,0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <materialDesign:PackIcon Kind="Search" Width="16" Height="16" Foreground="#718096" VerticalAlignment="Center"/>
-                            <TextBox Grid.Column="1" BorderThickness="0" Background="Transparent" VerticalAlignment="Center" FontSize="12" materialDesign:TextFieldAssist.DecorationVisibility="Collapsed" Height="24" Foreground="White" Margin="8,0,0,0" Padding="0,2,0,0" CaretBrush="White"/>
-                        </Grid>
-                    </materialDesign:Card>
-
-                    <!-- User Profiler / Header Right -->
-                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                        <materialDesign:PackIcon Kind="BellOutline" Width="20" Height="20" Foreground="#A0AEC0" VerticalAlignment="Center" Margin="0,0,16,0"/>
-                        <Border Width="30" Height="30" CornerRadius="15" Background="#2B364A" VerticalAlignment="Center" Margin="0,0,10,0">
-                            <TextBlock Text="JM" Foreground="White" FontWeight="Bold" FontSize="11" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <TextBlock Text="J. Miller" Foreground="White" FontWeight="SemiBold" VerticalAlignment="Center"/>
-                        <materialDesign:PackIcon Kind="ChevronDown" Width="16" Height="16" Foreground="#A0AEC0" VerticalAlignment="Center" Margin="4,0,0,0"/>
-                    </StackPanel>
                 </Grid>
             </Border>
 
@@ -647,46 +624,53 @@
                                     </Grid.RowDefinitions>
 
                                     <!-- Header -->
-                                    <DockPanel Grid.Row="0" Margin="0,0,0,12">
+                                    <DockPanel Grid.Row="0" Margin="0,0,0,6">
                                         <TextBlock Text="Speed Test" Foreground="#718096" FontSize="13" FontWeight="SemiBold"/>
                                         <materialDesign:PackIcon Kind="Speedometer" Foreground="#718096" Width="16" Height="16" HorizontalAlignment="Right"/>
                                     </DockPanel>
 
-                                    <!-- Gauge circle — centred, fills available vertical space -->
-                                    <Grid Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                        <Ellipse Width="190" Height="190" Stroke="#1A2035" StrokeThickness="14"/>
-                                        <Ellipse Width="190" Height="190" Stroke="#00E5FF" StrokeThickness="8" Opacity="0.25"/>
-                                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                                            <TextBlock Text="{Binding SpeedTestCurrentSpeedText}" FontSize="32" FontWeight="Black"
-                                                       Foreground="#00E5FF" HorizontalAlignment="Center"/>
-                                            <TextBlock Text="MBps" FontSize="12" Foreground="#A0AEC0" HorizontalAlignment="Center"/>
-                                            <TextBlock Text="{Binding SpeedTestPhase}" FontSize="10" Foreground="#718096"
-                                                       HorizontalAlignment="Center" Margin="0,2,0,0"/>
-                                        </StackPanel>
-                                        <Ellipse Width="198" Height="198" Stroke="#00E5FF" StrokeThickness="2.5" Opacity="0.4"
-                                                 Visibility="{Binding IsSpeedTestRunning, Converter={StaticResource BoolToVisibilityConverter}}">
-                                            <Ellipse.RenderTransform>
-                                                <RotateTransform CenterX="99" CenterY="99"/>
-                                            </Ellipse.RenderTransform>
-                                            <Ellipse.Triggers>
-                                                <EventTrigger RoutedEvent="Loaded">
-                                                    <BeginStoryboard>
-                                                        <Storyboard RepeatBehavior="Forever">
-                                                            <DoubleAnimation Storyboard.TargetProperty="RenderTransform.Angle"
-                                                                             From="0" To="360" Duration="0:0:1.5"/>
-                                                        </Storyboard>
-                                                    </BeginStoryboard>
-                                                </EventTrigger>
-                                            </Ellipse.Triggers>
-                                        </Ellipse>
-                                    </Grid>
+                                    <!-- Gauge circle — scales to fit available space -->
+                                    <Viewbox Grid.Row="1" Stretch="Uniform" MaxWidth="200" MaxHeight="200"
+                                             HorizontalAlignment="Center" VerticalAlignment="Center"
+                                             Margin="4">
+                                        <Grid Width="200" Height="200">
+                                            <Ellipse Width="190" Height="190" Stroke="#1A2035" StrokeThickness="14"
+                                                     HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            <Ellipse Width="190" Height="190" Stroke="#00E5FF" StrokeThickness="8" Opacity="0.25"
+                                                     HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                                <TextBlock Text="{Binding SpeedTestCurrentSpeedText}" FontSize="32" FontWeight="Black"
+                                                           Foreground="#00E5FF" HorizontalAlignment="Center"/>
+                                                <TextBlock Text="MBps" FontSize="12" Foreground="#A0AEC0" HorizontalAlignment="Center"/>
+                                                <TextBlock Text="{Binding SpeedTestPhase}" FontSize="10" Foreground="#718096"
+                                                           HorizontalAlignment="Center" Margin="0,2,0,0"/>
+                                            </StackPanel>
+                                            <Ellipse Width="198" Height="198" Stroke="#00E5FF" StrokeThickness="2.5" Opacity="0.4"
+                                                     HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                     Visibility="{Binding IsSpeedTestRunning, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                <Ellipse.RenderTransform>
+                                                    <RotateTransform CenterX="99" CenterY="99"/>
+                                                </Ellipse.RenderTransform>
+                                                <Ellipse.Triggers>
+                                                    <EventTrigger RoutedEvent="Loaded">
+                                                        <BeginStoryboard>
+                                                            <Storyboard RepeatBehavior="Forever">
+                                                                <DoubleAnimation Storyboard.TargetProperty="RenderTransform.Angle"
+                                                                                 From="0" To="360" Duration="0:0:1.5"/>
+                                                            </Storyboard>
+                                                        </BeginStoryboard>
+                                                    </EventTrigger>
+                                                </Ellipse.Triggers>
+                                            </Ellipse>
+                                        </Grid>
+                                    </Viewbox>
 
                                     <!-- Progress bar -->
-                                    <ProgressBar Grid.Row="2" Value="{Binding SpeedTestProgress}" Maximum="100" Height="5"
-                                                 Margin="0,8,0,12" Foreground="#00E5FF" Background="#1A2035"/>
+                                    <ProgressBar Grid.Row="2" Value="{Binding SpeedTestProgress}" Maximum="100" Height="4"
+                                                 Margin="0,4,0,8" Foreground="#00E5FF" Background="#1A2035"/>
 
                                     <!-- Metrics Grid -->
-                                    <Grid Grid.Row="3" Margin="0,0,0,12">
+                                    <Grid Grid.Row="3" Margin="0,0,0,8">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="*"/>
@@ -695,33 +679,33 @@
                                             <RowDefinition Height="Auto"/>
                                             <RowDefinition Height="Auto"/>
                                         </Grid.RowDefinitions>
-                                        <StackPanel Grid.Column="0" Grid.Row="0" Margin="0,0,4,10" HorizontalAlignment="Center">
-                                            <TextBlock Text="Download" Foreground="#718096" FontSize="11" FontWeight="SemiBold" HorizontalAlignment="Center"/>
-                                            <TextBlock Text="{Binding SpeedTestDownloadText}" Foreground="White" FontSize="14" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                        <StackPanel Grid.Column="0" Grid.Row="0" Margin="0,0,4,6" HorizontalAlignment="Center">
+                                            <TextBlock Text="Download" Foreground="#718096" FontSize="10" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                                            <TextBlock Text="{Binding SpeedTestDownloadText}" Foreground="White" FontSize="13" FontWeight="Bold" HorizontalAlignment="Center"/>
                                         </StackPanel>
-                                        <StackPanel Grid.Column="1" Grid.Row="0" Margin="4,0,0,10" HorizontalAlignment="Center">
-                                            <TextBlock Text="Upload" Foreground="#718096" FontSize="11" FontWeight="SemiBold" HorizontalAlignment="Center"/>
-                                            <TextBlock Text="{Binding SpeedTestUploadText}" Foreground="White" FontSize="14" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                        <StackPanel Grid.Column="1" Grid.Row="0" Margin="4,0,0,6" HorizontalAlignment="Center">
+                                            <TextBlock Text="Upload" Foreground="#718096" FontSize="10" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                                            <TextBlock Text="{Binding SpeedTestUploadText}" Foreground="White" FontSize="13" FontWeight="Bold" HorizontalAlignment="Center"/>
                                         </StackPanel>
                                         <StackPanel Grid.Column="0" Grid.Row="1" Margin="0,0,4,0" HorizontalAlignment="Center">
-                                            <TextBlock Text="Ping" Foreground="#718096" FontSize="11" FontWeight="SemiBold" HorizontalAlignment="Center"/>
-                                            <TextBlock Text="{Binding SpeedTestPingText}" Foreground="White" FontSize="14" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                            <TextBlock Text="Ping" Foreground="#718096" FontSize="10" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                                            <TextBlock Text="{Binding SpeedTestPingText}" Foreground="White" FontSize="13" FontWeight="Bold" HorizontalAlignment="Center"/>
                                         </StackPanel>
                                         <StackPanel Grid.Column="1" Grid.Row="1" Margin="4,0,0,0" HorizontalAlignment="Center">
-                                            <TextBlock Text="Jitter" Foreground="#718096" FontSize="11" FontWeight="SemiBold" HorizontalAlignment="Center"/>
-                                            <TextBlock Text="{Binding SpeedTestJitterText}" Foreground="White" FontSize="14" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                            <TextBlock Text="Jitter" Foreground="#718096" FontSize="10" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                                            <TextBlock Text="{Binding SpeedTestJitterText}" Foreground="White" FontSize="13" FontWeight="Bold" HorizontalAlignment="Center"/>
                                         </StackPanel>
                                     </Grid>
 
                                     <!-- Start / Abort Button -->
-                                    <Button Grid.Row="4" HorizontalAlignment="Center"
-                                            Width="190" Height="40"
+                                    <Button Grid.Row="4" HorizontalAlignment="Stretch"
+                                            Height="36"
                                             Command="{Binding RunSpeedTestCommand}"
                                             Style="{StaticResource MaterialDesignRaisedButton}"
                                             Background="#00E5FF" Foreground="#0A0F1E"
-                                            FontWeight="Bold" FontSize="13">
+                                            FontWeight="Bold" FontSize="12">
                                         <StackPanel Orientation="Horizontal">
-                                            <materialDesign:PackIcon Kind="Speedometer" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                            <materialDesign:PackIcon Kind="Speedometer" Width="16" Height="16" VerticalAlignment="Center" Margin="0,0,6,0"/>
                                             <TextBlock VerticalAlignment="Center">
                                                 <TextBlock.Style>
                                                     <Style TargetType="TextBlock">
