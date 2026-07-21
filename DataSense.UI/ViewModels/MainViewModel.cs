@@ -45,6 +45,8 @@ namespace DataSense.UI.ViewModels
         [ObservableProperty] private bool _isDarkTheme = true;
         [ObservableProperty] private bool _isStartupEnabled;
         [ObservableProperty] private bool _isSidebarCollapsed = false;
+        [ObservableProperty] private bool _isNetSpeedMeterEnabled;
+        [ObservableProperty] private bool _isNetSpeedMeterPinned;
 
         // Navigation
         [ObservableProperty] private int _selectedTabIndex = 0;
@@ -128,6 +130,7 @@ namespace DataSense.UI.ViewModels
         public ObservableCollection<ProcessUsageDisplay> TopProcesses { get; set; }
 
         private readonly DispatcherTimer _statsRefreshTimer;
+        private readonly NetSpeedMeterService _netSpeedMeterService;
 
         public MainViewModel(
             NetworkUsageAggregator aggregator,
@@ -136,7 +139,8 @@ namespace DataSense.UI.ViewModels
             DataLimitAlertService alertService,
             INetworkInterfaceService networkService,
             HistoryViewModel historyViewModel,
-            SpeedTestService speedTestService)
+            SpeedTestService speedTestService,
+            NetSpeedMeterService netSpeedMeterService)
         {
             _aggregator = aggregator;
             _scopeFactory = scopeFactory;
@@ -145,9 +149,18 @@ namespace DataSense.UI.ViewModels
             _networkService = networkService;
             _speedTestService = speedTestService;
             History = historyViewModel;
+            _netSpeedMeterService = netSpeedMeterService;
 
             _isStartupEnabled = startupService.IsStartupEnabled();
             _monthlyLimitGb = _alertService.MonthlyLimitBytes / (1024.0 * 1024.0 * 1024.0);
+            
+            // Restore net speed meter state from disk and set theme
+            _netSpeedMeterService.LoadState();
+            _isNetSpeedMeterEnabled = _netSpeedMeterService.IsEnabled;
+            _isNetSpeedMeterPinned = _netSpeedMeterService.IsPinnedToTaskbar;
+            _netSpeedMeterService.SetDarkTheme(IsDarkTheme);
+            if (_isNetSpeedMeterEnabled)
+                _netSpeedMeterService.SetEnabled(true);
 
             TopProcesses = new ObservableCollection<ProcessUsageDisplay>();
 
@@ -522,12 +535,25 @@ namespace DataSense.UI.ViewModels
                     ? MaterialDesignThemes.Wpf.BaseTheme.Dark
                     : MaterialDesignThemes.Wpf.BaseTheme.Light;
             }
+            _netSpeedMeterService.SetDarkTheme(IsDarkTheme);
         }
 
         [RelayCommand]
         private void ToggleStartup()
         {
             _startupService.SetStartupEnabled(IsStartupEnabled);
+        }
+
+        [RelayCommand]
+        private void ToggleNetSpeedMeter()
+        {
+            _netSpeedMeterService.SetEnabled(IsNetSpeedMeterEnabled);
+        }
+
+        [RelayCommand]
+        private void ToggleNetSpeedMeterPinned()
+        {
+            _netSpeedMeterService.IsPinnedToTaskbar = IsNetSpeedMeterPinned;
         }
 
         [RelayCommand]

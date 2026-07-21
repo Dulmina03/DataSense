@@ -935,6 +935,42 @@
                                     </StackPanel>
                                     <ToggleButton Grid.Column="1" Style="{StaticResource MaterialDesignSwitchToggleButton}" IsChecked="{Binding IsDarkTheme}" Command="{Binding ToggleThemeCommand}"/>
                                 </Grid>
+
+                                <Separator Margin="0,16,0,16" Background="#1A202C"/>
+
+                                <!-- Net Speed Meter Toggle -->
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0">
+                                        <StackPanel Orientation="Horizontal">
+                                            <materialDesign:PackIcon Kind="Speedometer" Foreground="#4FC3F7" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                            <TextBlock Text="Net Speed Meter Overlay" FontSize="15" FontWeight="SemiBold" Foreground="White" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                        <TextBlock Text="Show a real-time transparent upload/download speed meter on your taskbar. Drag to reposition." Foreground="Gray" Margin="26,2,0,0"/>
+                                    </StackPanel>
+                                    <ToggleButton Grid.Column="1" Style="{StaticResource MaterialDesignSwitchToggleButton}" IsChecked="{Binding IsNetSpeedMeterEnabled}" Command="{Binding ToggleNetSpeedMeterCommand}"/>
+                                </Grid>
+
+                                <Separator Margin="0,16,0,16" Background="#1A202C"/>
+
+                                <!-- Pin Net Speed Meter to Taskbar Toggle -->
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0">
+                                        <StackPanel Orientation="Horizontal">
+                                            <materialDesign:PackIcon Kind="Pin" Foreground="#EF5350" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                            <TextBlock Text="Pin Speed Meter to Taskbar" FontSize="15" FontWeight="SemiBold" Foreground="White" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                        <TextBlock Text="Locks the speed meter position directly onto the taskbar (next to the system tray clock)." Foreground="Gray" Margin="26,2,0,0"/>
+                                    </StackPanel>
+                                    <ToggleButton Grid.Column="1" Style="{StaticResource MaterialDesignSwitchToggleButton}" IsChecked="{Binding IsNetSpeedMeterPinned}" Command="{Binding ToggleNetSpeedMeterPinnedCommand}"/>
+                                </Grid>
                             </StackPanel>
                         </materialDesign:Card>
 

@@ -79,6 +79,9 @@ namespace DataSense.UI
                         services.AddTransient<HistoryWindow>();
                         services.AddSingleton<DataSense.UI.Services.StartupService>();
 
+                        // Register Net Speed Meter overlay service
+                        services.AddSingleton<DataSense.UI.Services.NetSpeedMeterService>();
+
                         // Register ViewModels
                         services.AddTransient<MainViewModel>();
 
