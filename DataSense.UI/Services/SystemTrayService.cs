@@ -1,4 +1,7 @@
 using System;
+using System.Drawing;
+using System.IO;
+using System.Reflection;
 using System.Windows;
 using Hardcodet.Wpf.TaskbarNotification;
 
@@ -14,11 +17,28 @@ namespace DataSense.UI.Services
             _mainWindow = mainWindow;
         }
 
+        private static System.Drawing.Icon LoadAppIcon()
+        {
+            try
+            {
+                // Load from embedded resource (pack URI → stream)
+                var uri = new Uri("pack://application:,,,/datasense_icon.png", UriKind.Absolute);
+                var sri = System.Windows.Application.GetResourceStream(uri);
+                if (sri != null)
+                {
+                    using var bmp = new System.Drawing.Bitmap(sri.Stream);
+                    return System.Drawing.Icon.FromHandle(bmp.GetHicon());
+                }
+            }
+            catch { }
+            return System.Drawing.SystemIcons.Application;
+        }
+
         public void Initialize()
         {
             _taskbarIcon = new TaskbarIcon
             {
-                Icon = System.Drawing.SystemIcons.Application,
+                Icon = LoadAppIcon(),
                 ToolTipText = "DataSense - Monitoring your network",
                 Visibility = Visibility.Visible
             };
