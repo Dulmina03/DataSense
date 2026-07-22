@@ -128,6 +128,32 @@
                         </Grid>
                     </ListBoxItem>
 
+                    <!-- Time Period Usage -->
+                    <ListBoxItem Padding="0" Height="50">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="70"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <materialDesign:PackIcon Grid.Column="0" Kind="ClockOutline" Width="22" Height="22" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="1" Text="Time Period Usage" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"
+                                       Visibility="{Binding DataContext.IsSidebarCollapsed, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource InverseBoolToVisibilityConverter}}"/>
+                        </Grid>
+                    </ListBoxItem>
+
+                    <!-- Speed Test -->
+                    <ListBoxItem Padding="0" Height="50">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="70"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <materialDesign:PackIcon Grid.Column="0" Kind="Speedometer" Width="22" Height="22" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="1" Text="Speed Test" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"
+                                       Visibility="{Binding DataContext.IsSidebarCollapsed, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource InverseBoolToVisibilityConverter}}"/>
+                        </Grid>
+                    </ListBoxItem>
+
                     <!-- Settings -->
                     <ListBoxItem Padding="0" Height="50">
                         <Grid>
@@ -203,6 +229,12 @@
                                         <Setter Property="Text" Value="Data Limit Threshold Settings"/>
                                     </DataTrigger>
                                     <DataTrigger Binding="{Binding SelectedTabIndex}" Value="3">
+                                        <Setter Property="Text" Value="Time Period Usage"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding SelectedTabIndex}" Value="4">
+                                        <Setter Property="Text" Value="Net Speed Testing"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding SelectedTabIndex}" Value="5">
                                         <Setter Property="Text" Value="System Preferences &amp; Config"/>
                                     </DataTrigger>
 
@@ -226,11 +258,9 @@
                     <Grid Margin="20">
                         <Grid.ColumnDefinitions>
                             <!-- Column 0: Daily usage & App breakdown -->
-                            <ColumnDefinition Width="1.8*" MinWidth="200"/>
+                            <ColumnDefinition Width="2*" MinWidth="200"/>
                             <!-- Column 1: Live Bandwidth & Process lists -->
                             <ColumnDefinition Width="3*" MinWidth="300"/>
-                            <!-- Column 2: Weekly peak usage & Monthly usage -->
-                            <ColumnDefinition Width="2*" MinWidth="220"/>
                         </Grid.ColumnDefinitions>
 
                         <!-- COLUMN 0 (LEFT) -->
@@ -363,8 +393,8 @@
                             </materialDesign:Card>
                         </Grid>
 
-                        <!-- COLUMN 1 (CENTER) -->
-                        <Grid Grid.Column="1" Margin="0,0,16,0">
+                        <!-- COLUMN 1 (RIGHT) -->
+                        <Grid Grid.Column="1" Margin="0,0,4,0">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="2*" MinHeight="220"/>
                                 <RowDefinition Height="3*" MinHeight="150"/>
@@ -440,300 +470,6 @@
                                             </GridView>
                                         </ListView.View>
                                     </ListView>
-                                </Grid>
-                            </materialDesign:Card>
-                        </Grid>
-
-                        <!-- COLUMN 2 (RIGHT) -->
-                        <Grid Grid.Column="2" Margin="0,0,4,0">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="1.1*"/>
-                                <RowDefinition Height="1*"/>
-                            </Grid.RowDefinitions>
-
-                            <!-- Custom Period Query Card -->
-                            <materialDesign:Card Grid.Row="0" Background="{StaticResource MaterialDesignCardBackground}" Padding="16" Margin="0,0,0,8">
-                                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                                    <StackPanel>
-                                        <TextBlock Text="Time Period Usage" Foreground="White" FontSize="14" FontWeight="Bold" Margin="0,0,0,4"/>
-                                        <TextBlock Text="Query network usage for a specific time range today" Foreground="#718096" FontSize="11" Margin="0,0,0,16"/>
- 
-                                        <!-- START TIME -->
-                                        <TextBlock Text="START TIME" Foreground="#718096" FontSize="10" FontWeight="Bold" Margin="0,0,0,6"/>
-                                        <Border Background="#1A2535" BorderBrush="#2D3748" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,0,12">
-                                            <Grid>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                    <ColumnDefinition Width="*"/>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                </Grid.ColumnDefinitions>
- 
-                                                <!-- Hour -->
-                                                <TextBox Grid.Column="0"
-                                                         Text="{Binding CustomStartHour, UpdateSourceTrigger=PropertyChanged}"
-                                                         Background="Transparent" BorderThickness="0"
-                                                         Foreground="White" FontSize="22" FontWeight="Bold"
-                                                         Width="36" TextAlignment="Center"
-                                                         MaxLength="2"
-                                                         materialDesign:HintAssist.Hint="hh"
-                                                         Style="{StaticResource MaterialDesignTextBox}"
-                                                         CaretBrush="White" VerticalAlignment="Center"/>
- 
-                                                <!-- Colon -->
-                                                <TextBlock Grid.Column="1" Text=":" Foreground="#00E5FF" FontSize="22" FontWeight="Bold"
-                                                           VerticalAlignment="Center" Margin="2,0"/>
- 
-                                                <!-- Minute -->
-                                                <TextBox Grid.Column="2"
-                                                         Text="{Binding CustomStartMinute, UpdateSourceTrigger=PropertyChanged}"
-                                                         Background="Transparent" BorderThickness="0"
-                                                         Foreground="White" FontSize="22" FontWeight="Bold"
-                                                         Width="36" TextAlignment="Center"
-                                                         MaxLength="2"
-                                                         materialDesign:HintAssist.Hint="mm"
-                                                         Style="{StaticResource MaterialDesignTextBox}"
-                                                         CaretBrush="White" VerticalAlignment="Center"/>
- 
-                                                <!-- AM/PM -->
-                                                <ComboBox Grid.Column="4"
-                                                          ItemsSource="{Binding AmPmOptions}"
-                                                          SelectedItem="{Binding CustomStartAmPm}"
-                                                          Foreground="#00E5FF"
-                                                          FontWeight="Bold" FontSize="13"
-                                                          Width="58"
-                                                          Background="Transparent"
-                                                          BorderThickness="0"
-                                                          VerticalAlignment="Center"
-                                                          HorizontalAlignment="Right"
-                                                          Style="{StaticResource {x:Static ToolBar.ComboBoxStyleKey}}">
-                                                    <ComboBox.ItemTemplate>
-                                                        <DataTemplate>
-                                                            <TextBlock Text="{Binding}" Foreground="#00E5FF" FontWeight="Bold" FontSize="13"/>
-                                                        </DataTemplate>
-                                                    </ComboBox.ItemTemplate>
-                                                </ComboBox>
-                                            </Grid>
-                                        </Border>
- 
-                                        <!-- Arrow between times -->
-                                        <TextBlock Text="▼  to" Foreground="#4A5568" FontSize="11" HorizontalAlignment="Center" Margin="0,0,0,8"/>
- 
-                                        <!-- END TIME -->
-                                        <TextBlock Text="END TIME" Foreground="#718096" FontSize="10" FontWeight="Bold" Margin="0,0,0,6"/>
-                                        <Border Background="#1A2535" BorderBrush="#2D3748" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,0,16">
-                                            <Grid>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                    <ColumnDefinition Width="*"/>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                </Grid.ColumnDefinitions>
- 
-                                                <!-- Hour -->
-                                                <TextBox Grid.Column="0"
-                                                         Text="{Binding CustomEndHour, UpdateSourceTrigger=PropertyChanged}"
-                                                         Background="Transparent" BorderThickness="0"
-                                                         Foreground="White" FontSize="22" FontWeight="Bold"
-                                                         Width="36" TextAlignment="Center"
-                                                         MaxLength="2"
-                                                         materialDesign:HintAssist.Hint="hh"
-                                                         Style="{StaticResource MaterialDesignTextBox}"
-                                                         CaretBrush="White" VerticalAlignment="Center"/>
- 
-                                                <!-- Colon -->
-                                                <TextBlock Grid.Column="1" Text=":" Foreground="#E91E63" FontSize="22" FontWeight="Bold"
-                                                           VerticalAlignment="Center" Margin="2,0"/>
- 
-                                                <!-- Minute -->
-                                                <TextBox Grid.Column="2"
-                                                         Text="{Binding CustomEndMinute, UpdateSourceTrigger=PropertyChanged}"
-                                                         Background="Transparent" BorderThickness="0"
-                                                         Foreground="White" FontSize="22" FontWeight="Bold"
-                                                         Width="36" TextAlignment="Center"
-                                                         MaxLength="2"
-                                                         materialDesign:HintAssist.Hint="mm"
-                                                         Style="{StaticResource MaterialDesignTextBox}"
-                                                         CaretBrush="White" VerticalAlignment="Center"/>
- 
-                                                <!-- AM/PM -->
-                                                <ComboBox Grid.Column="4"
-                                                          ItemsSource="{Binding AmPmOptions}"
-                                                          SelectedItem="{Binding CustomEndAmPm}"
-                                                          Foreground="#E91E63"
-                                                          FontWeight="Bold" FontSize="13"
-                                                          Width="58"
-                                                          Background="Transparent"
-                                                          BorderThickness="0"
-                                                          VerticalAlignment="Center"
-                                                          HorizontalAlignment="Right"
-                                                          Style="{StaticResource {x:Static ToolBar.ComboBoxStyleKey}}">
-                                                    <ComboBox.ItemTemplate>
-                                                        <DataTemplate>
-                                                            <TextBlock Text="{Binding}" Foreground="#E91E63" FontWeight="Bold" FontSize="13"/>
-                                                        </DataTemplate>
-                                                    </ComboBox.ItemTemplate>
-                                                </ComboBox>
-                                            </Grid>
-                                        </Border>
- 
-                                        <!-- Query Button -->
-                                        <Button Content="Check Usage"
-                                                Command="{Binding QueryCustomPeriodUsageCommand}"
-                                                Style="{StaticResource MaterialDesignRaisedButton}"
-                                                Background="{StaticResource PrimaryHueMidBrush}"
-                                                Foreground="{StaticResource PrimaryHueMidForegroundBrush}"
-                                                Margin="0,0,0,12"/>
- 
-                                        <!-- Info / Validation Message -->
-                                        <TextBlock Text="{Binding CustomPeriodInfoText}"
-                                                   Foreground="#718096"
-                                                   FontSize="11"
-                                                   TextWrapping="Wrap"
-                                                   Margin="0,0,0,8"
-                                                   Visibility="{Binding CustomPeriodInfoText, Converter={StaticResource StringNotEmptyToVisibilityConverter}}"/>
- 
-                                        <Border BorderThickness="0,1,0,0" BorderBrush="#2D3748" Padding="0,12,0,0">
-                                            <Grid>
-                                                <Grid.RowDefinitions>
-                                                    <RowDefinition Height="Auto"/>
-                                                    <RowDefinition Height="Auto"/>
-                                                    <RowDefinition Height="Auto"/>
-                                                </Grid.RowDefinitions>
- 
-                                                <!-- Download -->
-                                                <Grid Grid.Row="0" Margin="0,0,0,6">
-                                                    <TextBlock Text="Downloaded:" Foreground="#718096" FontSize="12"/>
-                                                    <TextBlock Text="{Binding CustomPeriodDownloadedText}" Foreground="White" FontWeight="Bold" HorizontalAlignment="Right" FontSize="12"/>
-                                                </Grid>
- 
-                                                <!-- Upload -->
-                                                <Grid Grid.Row="1" Margin="0,0,0,10">
-                                                    <TextBlock Text="Uploaded:" Foreground="#718096" FontSize="12"/>
-                                                    <TextBlock Text="{Binding CustomPeriodUploadedText}" Foreground="White" FontWeight="Bold" HorizontalAlignment="Right" FontSize="12"/>
-                                                </Grid>
- 
-                                                <!-- Total -->
-                                                <Grid Grid.Row="2">
-                                                    <TextBlock Text="Total Usage:" Foreground="White" FontWeight="SemiBold" FontSize="13"/>
-                                                    <TextBlock Text="{Binding CustomPeriodTotalText}" Foreground="#00E5FF" FontWeight="Bold" HorizontalAlignment="Right" FontSize="14"/>
-                                                </Grid>
-                                            </Grid>
-                                        </Border>
-                                    </StackPanel>
-                                </ScrollViewer>
-                            </materialDesign:Card>
-
-                            <!-- Speed Test Card -->
-                            <materialDesign:Card Grid.Row="1" Background="{StaticResource MaterialDesignCardBackground}" Padding="16" Margin="0,0,0,0">
-                                <Grid>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="*"/>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                    </Grid.RowDefinitions>
-
-                                    <!-- Header -->
-                                    <DockPanel Grid.Row="0" Margin="0,0,0,6">
-                                        <TextBlock Text="Speed Test" Foreground="#718096" FontSize="13" FontWeight="SemiBold"/>
-                                        <materialDesign:PackIcon Kind="Speedometer" Foreground="#718096" Width="16" Height="16" HorizontalAlignment="Right"/>
-                                    </DockPanel>
-
-                                    <!-- Gauge circle — scales to fit available space -->
-                                    <Viewbox Grid.Row="1" Stretch="Uniform" MaxWidth="200" MaxHeight="200"
-                                             HorizontalAlignment="Center" VerticalAlignment="Center"
-                                             Margin="4">
-                                        <Grid Width="200" Height="200">
-                                            <Ellipse Width="190" Height="190" Stroke="#1A2035" StrokeThickness="14"
-                                                     HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                            <Ellipse Width="190" Height="190" Stroke="#00E5FF" StrokeThickness="8" Opacity="0.25"
-                                                     HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                                                <TextBlock Text="{Binding SpeedTestCurrentSpeedText}" FontSize="32" FontWeight="Black"
-                                                           Foreground="#00E5FF" HorizontalAlignment="Center"/>
-                                                <TextBlock Text="MBps" FontSize="12" Foreground="#A0AEC0" HorizontalAlignment="Center"/>
-                                                <TextBlock Text="{Binding SpeedTestPhase}" FontSize="10" Foreground="#718096"
-                                                           HorizontalAlignment="Center" Margin="0,2,0,0"/>
-                                            </StackPanel>
-                                            <Ellipse Width="198" Height="198" Stroke="#00E5FF" StrokeThickness="2.5" Opacity="0.4"
-                                                     HorizontalAlignment="Center" VerticalAlignment="Center"
-                                                     Visibility="{Binding IsSpeedTestRunning, Converter={StaticResource BoolToVisibilityConverter}}">
-                                                <Ellipse.RenderTransform>
-                                                    <RotateTransform CenterX="99" CenterY="99"/>
-                                                </Ellipse.RenderTransform>
-                                                <Ellipse.Triggers>
-                                                    <EventTrigger RoutedEvent="Loaded">
-                                                        <BeginStoryboard>
-                                                            <Storyboard RepeatBehavior="Forever">
-                                                                <DoubleAnimation Storyboard.TargetProperty="RenderTransform.Angle"
-                                                                                 From="0" To="360" Duration="0:0:1.5"/>
-                                                            </Storyboard>
-                                                        </BeginStoryboard>
-                                                    </EventTrigger>
-                                                </Ellipse.Triggers>
-                                            </Ellipse>
-                                        </Grid>
-                                    </Viewbox>
-
-                                    <!-- Progress bar -->
-                                    <ProgressBar Grid.Row="2" Value="{Binding SpeedTestProgress}" Maximum="100" Height="4"
-                                                 Margin="0,4,0,8" Foreground="#00E5FF" Background="#1A2035"/>
-
-                                    <!-- Metrics Grid -->
-                                    <Grid Grid.Row="3" Margin="0,0,0,8">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="*"/>
-                                        </Grid.ColumnDefinitions>
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="Auto"/>
-                                        </Grid.RowDefinitions>
-                                        <StackPanel Grid.Column="0" Grid.Row="0" Margin="0,0,4,6" HorizontalAlignment="Center">
-                                            <TextBlock Text="Download" Foreground="#718096" FontSize="10" FontWeight="SemiBold" HorizontalAlignment="Center"/>
-                                            <TextBlock Text="{Binding SpeedTestDownloadText}" Foreground="White" FontSize="13" FontWeight="Bold" HorizontalAlignment="Center"/>
-                                        </StackPanel>
-                                        <StackPanel Grid.Column="1" Grid.Row="0" Margin="4,0,0,6" HorizontalAlignment="Center">
-                                            <TextBlock Text="Upload" Foreground="#718096" FontSize="10" FontWeight="SemiBold" HorizontalAlignment="Center"/>
-                                            <TextBlock Text="{Binding SpeedTestUploadText}" Foreground="White" FontSize="13" FontWeight="Bold" HorizontalAlignment="Center"/>
-                                        </StackPanel>
-                                        <StackPanel Grid.Column="0" Grid.Row="1" Margin="0,0,4,0" HorizontalAlignment="Center">
-                                            <TextBlock Text="Ping" Foreground="#718096" FontSize="10" FontWeight="SemiBold" HorizontalAlignment="Center"/>
-                                            <TextBlock Text="{Binding SpeedTestPingText}" Foreground="White" FontSize="13" FontWeight="Bold" HorizontalAlignment="Center"/>
-                                        </StackPanel>
-                                        <StackPanel Grid.Column="1" Grid.Row="1" Margin="4,0,0,0" HorizontalAlignment="Center">
-                                            <TextBlock Text="Jitter" Foreground="#718096" FontSize="10" FontWeight="SemiBold" HorizontalAlignment="Center"/>
-                                            <TextBlock Text="{Binding SpeedTestJitterText}" Foreground="White" FontSize="13" FontWeight="Bold" HorizontalAlignment="Center"/>
-                                        </StackPanel>
-                                    </Grid>
-
-                                    <!-- Start / Abort Button -->
-                                    <Button Grid.Row="4" HorizontalAlignment="Stretch"
-                                            Height="36"
-                                            Command="{Binding RunSpeedTestCommand}"
-                                            Style="{StaticResource MaterialDesignRaisedButton}"
-                                            Background="#00E5FF" Foreground="#0A0F1E"
-                                            FontWeight="Bold" FontSize="12">
-                                        <StackPanel Orientation="Horizontal">
-                                            <materialDesign:PackIcon Kind="Speedometer" Width="16" Height="16" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                                            <TextBlock VerticalAlignment="Center">
-                                                <TextBlock.Style>
-                                                    <Style TargetType="TextBlock">
-                                                        <Setter Property="Text" Value="Start Test"/>
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding IsSpeedTestRunning}" Value="True">
-                                                                <Setter Property="Text" Value="Testing…"/>
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </TextBlock.Style>
-                                            </TextBlock>
-                                        </StackPanel>
-                                    </Button>
                                 </Grid>
                             </materialDesign:Card>
                         </Grid>
@@ -972,7 +708,297 @@
                     </Grid>
                 </TabItem>
 
-                <!-- TAB 3: SETTINGS VIEW -->
+
+                <!-- TAB 3: TIME PERIOD USAGE -->
+                <TabItem>
+                    <Grid Margin="24">
+                        <!-- Query Card -->
+                        <materialDesign:Card Background="{StaticResource MaterialDesignCardBackground}" Padding="24">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                                <StackPanel>
+                                    <!-- START TIME -->
+                                    <TextBlock Text="START TIME" Foreground="#718096" FontSize="11" FontWeight="Bold" Margin="0,0,0,8"/>
+                                    <Border Background="#1A2535" BorderBrush="#2D3748" BorderThickness="1" CornerRadius="8" Padding="16,10" Margin="0,0,0,16">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <!-- Hour -->
+                                            <TextBox Grid.Column="0"
+                                                     Text="{Binding CustomStartHour, UpdateSourceTrigger=PropertyChanged}"
+                                                     Background="Transparent" BorderThickness="0"
+                                                     Foreground="White" FontSize="26" FontWeight="Bold"
+                                                     Width="45" TextAlignment="Center"
+                                                     MaxLength="2"
+                                                     materialDesign:HintAssist.Hint="hh"
+                                                     Style="{StaticResource MaterialDesignTextBox}"
+                                                     CaretBrush="White" VerticalAlignment="Center"/>
+
+                                            <!-- Colon -->
+                                            <TextBlock Grid.Column="1" Text=":" Foreground="#00E5FF" FontSize="26" FontWeight="Bold"
+                                                       VerticalAlignment="Center" Margin="4,0"/>
+
+                                            <!-- Minute -->
+                                            <TextBox Grid.Column="2"
+                                                     Text="{Binding CustomStartMinute, UpdateSourceTrigger=PropertyChanged}"
+                                                     Background="Transparent" BorderThickness="0"
+                                                     Foreground="White" FontSize="26" FontWeight="Bold"
+                                                     Width="45" TextAlignment="Center"
+                                                     MaxLength="2"
+                                                     materialDesign:HintAssist.Hint="mm"
+                                                     Style="{StaticResource MaterialDesignTextBox}"
+                                                     CaretBrush="White" VerticalAlignment="Center"/>
+
+                                            <!-- AM/PM -->
+                                            <ComboBox Grid.Column="4"
+                                                      ItemsSource="{Binding AmPmOptions}"
+                                                      SelectedItem="{Binding CustomStartAmPm}"
+                                                      Foreground="#00E5FF"
+                                                      FontWeight="Bold" FontSize="15"
+                                                      Width="70"
+                                                      Background="Transparent"
+                                                      BorderThickness="0"
+                                                      VerticalAlignment="Center"
+                                                      HorizontalAlignment="Right"
+                                                      Style="{StaticResource {x:Static ToolBar.ComboBoxStyleKey}}">
+                                                <ComboBox.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding}" Foreground="#00E5FF" FontWeight="Bold" FontSize="15"/>
+                                                    </DataTemplate>
+                                                </ComboBox.ItemTemplate>
+                                            </ComboBox>
+                                        </Grid>
+                                    </Border>
+
+                                    <!-- Arrow between times -->
+                                    <materialDesign:PackIcon Kind="ArrowDown" Foreground="#4A5568" Width="20" Height="20" HorizontalAlignment="Center" Margin="0,0,0,16"/>
+
+                                    <!-- END TIME -->
+                                    <TextBlock Text="END TIME" Foreground="#718096" FontSize="11" FontWeight="Bold" Margin="0,0,0,8"/>
+                                    <Border Background="#1A2535" BorderBrush="#2D3748" BorderThickness="1" CornerRadius="8" Padding="16,10" Margin="0,0,0,20">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <!-- Hour -->
+                                            <TextBox Grid.Column="0"
+                                                     Text="{Binding CustomEndHour, UpdateSourceTrigger=PropertyChanged}"
+                                                     Background="Transparent" BorderThickness="0"
+                                                     Foreground="White" FontSize="26" FontWeight="Bold"
+                                                     Width="45" TextAlignment="Center"
+                                                     MaxLength="2"
+                                                     materialDesign:HintAssist.Hint="hh"
+                                                     Style="{StaticResource MaterialDesignTextBox}"
+                                                     CaretBrush="White" VerticalAlignment="Center"/>
+
+                                            <!-- Colon -->
+                                            <TextBlock Grid.Column="1" Text=":" Foreground="#E91E63" FontSize="26" FontWeight="Bold"
+                                                       VerticalAlignment="Center" Margin="4,0"/>
+
+                                            <!-- Minute -->
+                                            <TextBox Grid.Column="2"
+                                                     Text="{Binding CustomEndMinute, UpdateSourceTrigger=PropertyChanged}"
+                                                     Background="Transparent" BorderThickness="0"
+                                                     Foreground="White" FontSize="26" FontWeight="Bold"
+                                                     Width="45" TextAlignment="Center"
+                                                     MaxLength="2"
+                                                     materialDesign:HintAssist.Hint="mm"
+                                                     Style="{StaticResource MaterialDesignTextBox}"
+                                                     CaretBrush="White" VerticalAlignment="Center"/>
+
+                                            <!-- AM/PM -->
+                                            <ComboBox Grid.Column="4"
+                                                      ItemsSource="{Binding AmPmOptions}"
+                                                      SelectedItem="{Binding CustomEndAmPm}"
+                                                      Foreground="#E91E63"
+                                                      FontWeight="Bold" FontSize="15"
+                                                      Width="70"
+                                                      Background="Transparent"
+                                                      BorderThickness="0"
+                                                      VerticalAlignment="Center"
+                                                      HorizontalAlignment="Right"
+                                                      Style="{StaticResource {x:Static ToolBar.ComboBoxStyleKey}}">
+                                                <ComboBox.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding}" Foreground="#E91E63" FontWeight="Bold" FontSize="15"/>
+                                                    </DataTemplate>
+                                                </ComboBox.ItemTemplate>
+                                            </ComboBox>
+                                        </Grid>
+                                    </Border>
+
+                                    <!-- Query Button -->
+                                    <Button Content="Check Usage"
+                                            Command="{Binding QueryCustomPeriodUsageCommand}"
+                                            Style="{StaticResource MaterialDesignRaisedButton}"
+                                            Background="{StaticResource PrimaryHueMidBrush}"
+                                            Foreground="{StaticResource PrimaryHueMidForegroundBrush}"
+                                            Height="42"
+                                            FontSize="14"
+                                            FontWeight="Bold"
+                                            Margin="0,0,0,16"/>
+
+                                    <!-- Info / Validation Message -->
+                                    <TextBlock Text="{Binding CustomPeriodInfoText}"
+                                               Foreground="#718096"
+                                               FontSize="12"
+                                               TextWrapping="Wrap"
+                                               Margin="0,0,0,16"
+                                               Visibility="{Binding CustomPeriodInfoText, Converter={StaticResource StringNotEmptyToVisibilityConverter}}"/>
+
+                                    <Border BorderThickness="0,1,0,0" BorderBrush="#2D3748" Padding="0,16,0,0">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+
+                                            <!-- Download -->
+                                            <Grid Grid.Row="0" Margin="0,0,0,8">
+                                                <TextBlock Text="Downloaded:" Foreground="#718096" FontSize="13"/>
+                                                <TextBlock Text="{Binding CustomPeriodDownloadedText}" Foreground="White" FontWeight="Bold" HorizontalAlignment="Right" FontSize="13"/>
+                                            </Grid>
+
+                                            <!-- Upload -->
+                                            <Grid Grid.Row="1" Margin="0,0,0,12">
+                                                <TextBlock Text="Uploaded:" Foreground="#718096" FontSize="13"/>
+                                                <TextBlock Text="{Binding CustomPeriodUploadedText}" Foreground="White" FontWeight="Bold" HorizontalAlignment="Right" FontSize="13"/>
+                                            </Grid>
+
+                                            <!-- Total -->
+                                            <Grid Grid.Row="2">
+                                                <TextBlock Text="Total Usage:" Foreground="White" FontWeight="SemiBold" FontSize="14"/>
+                                                <TextBlock Text="{Binding CustomPeriodTotalText}" Foreground="#00E5FF" FontWeight="Bold" HorizontalAlignment="Right" FontSize="16"/>
+                                            </Grid>
+                                        </Grid>
+                                    </Border>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </materialDesign:Card>
+                    </Grid>
+                </TabItem>
+
+                <!-- TAB 4: SPEED TEST -->
+                <TabItem>
+                    <Grid Margin="24">
+                        <!-- Speed Test Card -->
+                        <materialDesign:Card Background="{StaticResource MaterialDesignCardBackground}" Padding="24">
+                            <Grid HorizontalAlignment="Center" MaxWidth="560">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <!-- Gauge circle -->
+                                <Viewbox Grid.Row="0" Stretch="Uniform" MaxWidth="280" MaxHeight="280"
+                                         HorizontalAlignment="Center" VerticalAlignment="Center"
+                                         Margin="12">
+                                    <Grid Width="200" Height="200">
+                                        <Ellipse Width="190" Height="190" Stroke="#1A2035" StrokeThickness="14"
+                                                 HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        <Ellipse Width="190" Height="190" Stroke="#00E5FF" StrokeThickness="8" Opacity="0.25"
+                                                 HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                            <TextBlock Text="{Binding SpeedTestCurrentSpeedText}" FontSize="32" FontWeight="Black"
+                                                       Foreground="#00E5FF" HorizontalAlignment="Center"/>
+                                            <TextBlock Text="MBps" FontSize="12" Foreground="#A0AEC0" HorizontalAlignment="Center"/>
+                                            <TextBlock Text="{Binding SpeedTestPhase}" FontSize="10" Foreground="#718096"
+                                                       HorizontalAlignment="Center" Margin="0,2,0,0"/>
+                                        </StackPanel>
+                                        <Ellipse Width="198" Height="198" Stroke="#00E5FF" StrokeThickness="2.5" Opacity="0.4"
+                                                 HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                 Visibility="{Binding IsSpeedTestRunning, Converter={StaticResource BoolToVisibilityConverter}}">
+                                            <Ellipse.RenderTransform>
+                                                <RotateTransform CenterX="99" CenterY="99"/>
+                                            </Ellipse.RenderTransform>
+                                            <Ellipse.Triggers>
+                                                <EventTrigger RoutedEvent="Loaded">
+                                                    <BeginStoryboard>
+                                                        <Storyboard RepeatBehavior="Forever">
+                                                            <DoubleAnimation Storyboard.TargetProperty="RenderTransform.Angle"
+                                                                             From="0" To="360" Duration="0:0:1.5"/>
+                                                        </Storyboard>
+                                                    </BeginStoryboard>
+                                                </EventTrigger>
+                                            </Ellipse.Triggers>
+                                        </Ellipse>
+                                    </Grid>
+                                </Viewbox>
+
+                                <!-- Progress bar -->
+                                <ProgressBar Grid.Row="1" Value="{Binding SpeedTestProgress}" Maximum="100" Height="6"
+                                             Margin="0,16,0,20" Foreground="#00E5FF" Background="#1A2035"/>
+
+                                <!-- Metrics Grid -->
+                                <Grid Grid.Row="2" Margin="0,0,0,20">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <StackPanel Grid.Column="0" Grid.Row="0" Margin="0,0,8,12" HorizontalAlignment="Center">
+                                        <TextBlock Text="Download" Foreground="#718096" FontSize="11" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                                        <TextBlock Text="{Binding SpeedTestDownloadText}" Foreground="White" FontSize="16" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Grid.Row="0" Margin="8,0,0,12" HorizontalAlignment="Center">
+                                        <TextBlock Text="Upload" Foreground="#718096" FontSize="11" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                                        <TextBlock Text="{Binding SpeedTestUploadText}" Foreground="White" FontSize="16" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="0" Grid.Row="1" Margin="0,0,8,0" HorizontalAlignment="Center">
+                                        <TextBlock Text="Ping" Foreground="#718096" FontSize="11" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                                        <TextBlock Text="{Binding SpeedTestPingText}" Foreground="White" FontSize="16" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Grid.Row="1" Margin="8,0,0,0" HorizontalAlignment="Center">
+                                        <TextBlock Text="Jitter" Foreground="#718096" FontSize="11" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                                        <TextBlock Text="{Binding SpeedTestJitterText}" Foreground="White" FontSize="16" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                                    </StackPanel>
+                                </Grid>
+
+                                <!-- Start / Abort Button -->
+                                <Button Grid.Row="3" HorizontalAlignment="Stretch"
+                                        Height="42"
+                                        Command="{Binding RunSpeedTestCommand}"
+                                        Style="{StaticResource MaterialDesignRaisedButton}"
+                                        Background="#00E5FF" Foreground="#0A0F1E"
+                                        FontWeight="Bold" FontSize="13">
+                                    <StackPanel Orientation="Horizontal">
+                                        <materialDesign:PackIcon Kind="Speedometer" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                        <TextBlock VerticalAlignment="Center">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Text" Value="Start Speed Test"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsSpeedTestRunning}" Value="True">
+                                                            <Setter Property="Text" Value="Testing…"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </StackPanel>
+                                </Button>
+                            </Grid>
+                        </materialDesign:Card>
+                    </Grid>
+                </TabItem>
+
+                <!-- TAB 5: SETTINGS -->
                 <TabItem>
                     <Grid Margin="24">
                         <Grid.RowDefinitions>
@@ -1051,7 +1077,7 @@
 
                                 <Separator Margin="0,16,0,16" Background="#1A202C"/>
 
-                                <!-- Customization Options (Color & Size) -->
+                                <!-- Customization Options (Color &amp; Size) -->
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
@@ -1064,19 +1090,17 @@
                                         </StackPanel>
                                         <TextBlock Text="Configure the font color and text size of the speed overlay." Foreground="Gray" Margin="26,2,0,0"/>
                                     </StackPanel>
-                                    
                                     <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                                         <!-- Color Selection -->
-                                        <ComboBox Width="110" Margin="0,0,12,0" 
+                                        <ComboBox Width="110" Margin="0,0,12,0"
                                                   ItemsSource="{Binding NetSpeedMeterAvailableColors}"
                                                   SelectedItem="{Binding SelectedNetSpeedMeterColor}"
                                                   Style="{StaticResource MaterialDesignOutlinedComboBox}"
                                                   materialDesign:HintAssist.Hint="Color"
                                                   Foreground="White"
                                                   BorderBrush="#33FFFFFF"/>
-                                        
                                         <!-- Font Size Selection -->
-                                        <ComboBox Width="80" 
+                                        <ComboBox Width="80"
                                                   ItemsSource="{Binding NetSpeedMeterAvailableFontSizes}"
                                                   SelectedItem="{Binding SelectedNetSpeedMeterFontSize}"
                                                   Style="{StaticResource MaterialDesignOutlinedComboBox}"
