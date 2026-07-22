@@ -52,6 +52,15 @@ namespace DataSense.UI
         {
             InitializeComponent();
 
+            // When the window is loaded, ensure position is calculated with the final rendered size.
+            this.Loaded += (s, e) =>
+            {
+                if (DataContext is Services.NetSpeedMeterService service)
+                {
+                    service.UpdateWindowPosition();
+                }
+            };
+
             // Listen for size changes to reposition when font size or content changes
             this.SizeChanged += (s, e) =>
             {

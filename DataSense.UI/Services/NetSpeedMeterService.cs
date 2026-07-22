@@ -215,12 +215,13 @@ namespace DataSense.UI.Services
                     double workAreaBottom = SystemParameters.WorkArea.Bottom;
                     double windowWidth = _meterWindow.Width;
                     double windowHeight = _meterWindow.Height;
+                    _meterWindow.UpdateLayout();
                     double actualHeight = _meterWindow.ActualHeight;
+                    if (double.IsNaN(actualHeight) || actualHeight == 0) actualHeight = 36;
 
                     // If width or height is NaN (not loaded yet), use default dimensions
                     if (double.IsNaN(windowWidth) || windowWidth == 0) windowWidth = 90;
                     if (double.IsNaN(windowHeight) || windowHeight == 0) windowHeight = 36;
-                    if (double.IsNaN(actualHeight) || actualHeight == 0) actualHeight = 36;
 
                     // Position inside the taskbar (clock / system tray is on the far right)
                     if (workAreaBottom < screenHeight) // Bottom Taskbar
@@ -239,13 +240,13 @@ namespace DataSense.UI.Services
                     {
                         double taskbarWidth = workAreaLeft;
                         _meterWindow.Left = (taskbarWidth - windowWidth) / 2;
-                        _meterWindow.Top = workAreaBottom - windowHeight - 10;
+                        _meterWindow.Top = workAreaBottom - actualHeight - 10;
                     }
                     else if (workAreaRight < screenWidth) // Right Taskbar
                     {
                         double taskbarWidth = screenWidth - workAreaRight;
                         _meterWindow.Left = workAreaRight + (taskbarWidth - windowWidth) / 2;
-                        _meterWindow.Top = workAreaBottom - windowHeight - 10;
+                        _meterWindow.Top = workAreaBottom - actualHeight - 10;
                     }
                     else
                     {
