@@ -1,8 +1,9 @@
 using System;
 using System.Drawing;
-using System.IO;
-using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using Hardcodet.Wpf.TaskbarNotification;
 
 namespace DataSense.UI.Services
@@ -10,7 +11,12 @@ namespace DataSense.UI.Services
     public class SystemTrayService : IDisposable
     {
         private TaskbarIcon? _taskbarIcon;
+        private ContextMenu? _contextMenu;
         private readonly Window _mainWindow;
+
+        // Required to properly give focus to the WPF popup so the menu doesn't blink/dismiss
+        [DllImport("user32.dll")]
+        private static extern bool SetForegroundWindow(IntPtr hWnd);
 
         public SystemTrayService(Window mainWindow)
         {
@@ -21,7 +27,6 @@ namespace DataSense.UI.Services
         {
             try
             {
-                // Load from embedded resource (pack URI → stream)
                 var uri = new Uri("pack://application:,,,/datasense_icon.png", UriKind.Absolute);
                 var sri = System.Windows.Application.GetResourceStream(uri);
                 if (sri != null)
@@ -43,21 +48,40 @@ namespace DataSense.UI.Services
                 Visibility = Visibility.Visible
             };
 
-            // Context menu
-            var contextMenu = new System.Windows.Controls.ContextMenu();
+            // Build the context menu
+            _contextMenu = new ContextMenu();
+            _contextMenu.Placement = PlacementMode.Mouse;
 
-            var showItem = new System.Windows.Controls.MenuItem { Header = "Show DataSense" };
+            var showItem = new MenuItem { Header = "Show DataSense" };
             showItem.Click += (s, e) => ShowMainWindow();
-            contextMenu.Items.Add(showItem);
+            _contextMenu.Items.Add(showItem);
 
-            contextMenu.Items.Add(new System.Windows.Controls.Separator());
+            _contextMenu.Items.Add(new Separator());
 
-            var exitItem = new System.Windows.Controls.MenuItem { Header = "Exit" };
+            var exitItem = new MenuItem { Header = "Exit" };
             exitItem.Click += (s, e) => Application.Current.Shutdown();
-            contextMenu.Items.Add(exitItem);
+            _contextMenu.Items.Add(exitItem);
 
-            _taskbarIcon.ContextMenu = contextMenu;
+            // Handle closing when the menu loses focus
+            _contextMenu.Closed += (s, e) => _contextMenu.IsOpen = false;
+
+            // Use TrayRightMouseUp so we control when/how the menu opens
+            // This is key: we bring the hidden helper window to the foreground first
+            // so the WPF ContextMenu popup receives keyboard focus and doesn't blink away.
+            _taskbarIcon.TrayRightMouseUp += OnTrayRightMouseUp;
             _taskbarIcon.TrayMouseDoubleClick += (s, e) => ShowMainWindow();
+        }
+
+        private void OnTrayRightMouseUp(object sender, RoutedEventArgs e)
+        {
+            if (_contextMenu == null) return;
+
+            // Bring our main window to the foreground (even if hidden) so WPF gets focus.
+            // Without this the ContextMenu immediately loses activation and flickers closed.
+            var hwnd = new System.Windows.Interop.WindowInteropHelper(_mainWindow).Handle;
+            SetForegroundWindow(hwnd);
+
+            _contextMenu.IsOpen = true;
         }
 
         private void ShowMainWindow()

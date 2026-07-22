@@ -21,6 +21,7 @@ namespace DataSense.Core.Services
     public class NetworkUsageAggregator : IHostedService
     {
         private ConcurrentDictionary<string, UsageStats> _processStats = new ConcurrentDictionary<string, UsageStats>();
+        private ConcurrentDictionary<string, UsageStats> _networkStats = new ConcurrentDictionary<string, UsageStats>();
         private long _totalDownloaded = 0;
         private long _totalUploaded = 0;
 
@@ -50,10 +51,71 @@ namespace DataSense.Core.Services
             _logger = logger;
         }
 
-        public void AddPacket(string processName, long bytes, bool isUpload)
+        private static string? _cachedSsid;
+        private static DateTime _lastSsidFetch = DateTime.MinValue;
+        private static readonly object _ssidLock = new object();
+
+        public static string? GetActiveWifiSsid()
+        {
+            lock (_ssidLock)
+            {
+                if ((DateTime.Now - _lastSsidFetch).TotalSeconds < 2)
+                {
+                    return _cachedSsid;
+                }
+                _lastSsidFetch = DateTime.Now;
+            }
+
+            try
+            {
+                var psi = new System.Diagnostics.ProcessStartInfo("netsh", "wlan show interfaces")
+                {
+                    RedirectStandardOutput = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    StandardOutputEncoding = System.Text.Encoding.UTF8
+                };
+                using var proc = System.Diagnostics.Process.Start(psi);
+                if (proc != null)
+                {
+                    string output = proc.StandardOutput.ReadToEnd();
+                    proc.WaitForExit(2000);
+                    foreach (var rawLine in output.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries))
+                    {
+                        var line = rawLine.Trim();
+                        if (line.StartsWith("SSID", StringComparison.OrdinalIgnoreCase) && 
+                           !line.StartsWith("AP BSSID", StringComparison.OrdinalIgnoreCase) &&
+                           !line.StartsWith("BSSID", StringComparison.OrdinalIgnoreCase))
+                        {
+                            int colonIdx = line.IndexOf(':');
+                            if (colonIdx >= 0 && colonIdx < line.Length - 1)
+                            {
+                                string ssid = line.Substring(colonIdx + 1).Trim();
+                                if (!string.IsNullOrEmpty(ssid))
+                                {
+                                    lock (_ssidLock) { _cachedSsid = ssid; }
+                                    return ssid;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch { }
+
+            lock (_ssidLock) { return _cachedSsid; }
+        }
+
+        public void AddPacket(string processName, long bytes, bool isUpload, string networkName)
         {
             if (string.IsNullOrWhiteSpace(processName))
                 processName = "System";
+
+            if (string.IsNullOrWhiteSpace(networkName) || networkName.Equals("Unknown Network", StringComparison.OrdinalIgnoreCase))
+            {
+                var ssid = GetActiveWifiSsid();
+                networkName = !string.IsNullOrEmpty(ssid) ? ssid : "Connected Network";
+            }
 
             if (isUpload)
             {
@@ -71,6 +133,13 @@ namespace DataSense.Core.Services
             {
                 if (isUpload) stats.BytesUploaded += bytes;
                 else stats.BytesDownloaded += bytes;
+            }
+
+            var netStats = _networkStats.GetOrAdd(networkName, _ => new UsageStats());
+            lock (netStats)
+            {
+                if (isUpload) netStats.BytesUploaded += bytes;
+                else netStats.BytesDownloaded += bytes;
             }
 
             // Record into the per-minute bucket (local time, truncated to minute)
@@ -110,6 +179,44 @@ namespace DataSense.Core.Services
             }
             return dict;
         }
+
+        /// <summary>
+        /// Returns a snapshot of today's per-network usage (live, in-memory since app start).
+        /// </summary>
+        public Dictionary<string, UsageStats> GetCurrentNetworkStats()
+        {
+            var dict = new Dictionary<string, UsageStats>();
+            string? activeSsid = null;
+
+            foreach (var kvp in _networkStats)
+            {
+                string key = kvp.Key;
+                if (key.Equals("Unknown Network", StringComparison.OrdinalIgnoreCase) || string.IsNullOrWhiteSpace(key))
+                {
+                    activeSsid ??= GetActiveWifiSsid();
+                    key = !string.IsNullOrEmpty(activeSsid) ? activeSsid : "Connected Network";
+                }
+
+                lock (kvp.Value)
+                {
+                    if (dict.TryGetValue(key, out var existing))
+                    {
+                        existing.BytesDownloaded += kvp.Value.BytesDownloaded;
+                        existing.BytesUploaded += kvp.Value.BytesUploaded;
+                    }
+                    else
+                    {
+                        dict[key] = new UsageStats
+                        {
+                            BytesDownloaded = kvp.Value.BytesDownloaded,
+                            BytesUploaded = kvp.Value.BytesUploaded
+                        };
+                    }
+                }
+            }
+            return dict;
+        }
+
 
         /// <summary>
         /// Returns total downloaded/uploaded bytes within [from, to) time-of-day from the minute-bucket log.
@@ -208,8 +315,9 @@ namespace DataSense.Core.Services
             long uploaded = Interlocked.Exchange(ref _totalUploaded, 0);
 
             var currentStats = Interlocked.Exchange(ref _processStats, new ConcurrentDictionary<string, UsageStats>());
+            var currentNetStats = Interlocked.Exchange(ref _networkStats, new ConcurrentDictionary<string, UsageStats>());
 
-            if (downloaded == 0 && uploaded == 0 && currentStats.IsEmpty) return;
+            if (downloaded == 0 && uploaded == 0 && currentStats.IsEmpty && currentNetStats.IsEmpty) return;
 
             try
             {
@@ -217,7 +325,8 @@ namespace DataSense.Core.Services
                 var repo = scope.ServiceProvider.GetRequiredService<IUsageRepository>();
 
                 var processDict = currentStats.ToDictionary(k => k.Key, v => v.Value);
-                await repo.SaveUsageAsync(DateTime.Now, downloaded, uploaded, processDict);
+                var networkDict = currentNetStats.ToDictionary(k => k.Key, v => v.Value);
+                await repo.SaveUsageAsync(DateTime.Now, downloaded, uploaded, processDict, networkDict);
                 SaveMinuteBuckets();
             }
             catch (Exception ex)
@@ -230,6 +339,15 @@ namespace DataSense.Core.Services
                 foreach (var kvp in currentStats)
                 {
                     var stats = _processStats.GetOrAdd(kvp.Key, _ => new UsageStats());
+                    lock (stats)
+                    {
+                        stats.BytesDownloaded += kvp.Value.BytesDownloaded;
+                        stats.BytesUploaded += kvp.Value.BytesUploaded;
+                    }
+                }
+                foreach (var kvp in currentNetStats)
+                {
+                    var stats = _networkStats.GetOrAdd(kvp.Key, _ => new UsageStats());
                     lock (stats)
                     {
                         stats.BytesDownloaded += kvp.Value.BytesDownloaded;

@@ -7,5 +7,6 @@ namespace DataSense.Core.Domain
         public string Description { get; set; } = string.Empty;
         public string MacAddress { get; set; } = string.Empty;
         public bool IsLoopback { get; set; }
+        public string NetworkName { get; set; } = string.Empty;
     }
 }

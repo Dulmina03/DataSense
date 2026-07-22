@@ -74,7 +74,7 @@ namespace DataSense.Core.Services
             int processId = _processMapper.GetProcessId(localPort, packet.Protocol);
             string processName = _processMapper.GetProcessName(processId);
             
-            _aggregator.AddPacket(processName, packet.BytesLength, packet.IsUpload);
+            _aggregator.AddPacket(processName, packet.BytesLength, packet.IsUpload, packet.NetworkName);
         }
 
         public Task StopAsync(CancellationToken cancellationToken)

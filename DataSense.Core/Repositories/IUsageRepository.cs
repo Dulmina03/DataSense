@@ -7,7 +7,8 @@ namespace DataSense.Core.Repositories
 {
     public interface IUsageRepository
     {
-        Task SaveUsageAsync(DateTime date, long bytesDownloaded, long bytesUploaded, Dictionary<string, UsageStats> processUsages);
+        Task SaveUsageAsync(DateTime date, long bytesDownloaded, long bytesUploaded, Dictionary<string, UsageStats> processUsages, Dictionary<string, UsageStats> networkUsages);
+        Task<List<MonthlyNetworkUsageInfo>> GetMonthlyNetworkUsagesAsync(int year, int month);
         Task<UsageStats> GetTotalUsageForMonthAsync(int year, int month);
         Task<List<DailyUsageInfo>> GetDailyUsagesAsync(DateTime from, DateTime to);
         Task<List<ProcessUsageInfo>> GetProcessUsagesForDateAsync(DateTime date);

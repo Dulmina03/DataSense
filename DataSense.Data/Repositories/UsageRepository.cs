@@ -18,7 +18,7 @@ namespace DataSense.Data.Repositories
             _context = context;
         }
 
-        public async Task SaveUsageAsync(DateTime date, long bytesDownloaded, long bytesUploaded, Dictionary<string, UsageStats> processUsages)
+        public async Task SaveUsageAsync(DateTime date, long bytesDownloaded, long bytesUploaded, Dictionary<string, UsageStats> processUsages, Dictionary<string, UsageStats> networkUsages)
         {
             var dateOnly = date.Date;
 
@@ -57,7 +57,73 @@ namespace DataSense.Data.Repositories
                 }
             }
 
+            // Update network usages
+            var networkNames = networkUsages.Keys.ToList();
+            var existingNetworkUsages = await _context.NetworkUsages
+                .Where(n => n.Date == dateOnly && networkNames.Contains(n.NetworkName))
+                .ToDictionaryAsync(n => n.NetworkName);
+
+            foreach (var nu in networkUsages)
+            {
+                if (existingNetworkUsages.TryGetValue(nu.Key, out var entity))
+                {
+                    entity.BytesDownloaded += nu.Value.BytesDownloaded;
+                    entity.BytesUploaded += nu.Value.BytesUploaded;
+                }
+                else
+                {
+                    _context.NetworkUsages.Add(new NetworkUsageEntity
+                    {
+                        Date = dateOnly,
+                        NetworkName = nu.Key,
+                        BytesDownloaded = nu.Value.BytesDownloaded,
+                        BytesUploaded = nu.Value.BytesUploaded
+                    });
+                }
+            }
+
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<List<MonthlyNetworkUsageInfo>> GetMonthlyNetworkUsagesAsync(int year, int month)
+        {
+            var start = new DateTime(year, month, 1);
+            var end = start.AddMonths(1);
+
+            var rawGroups = await _context.NetworkUsages
+                .Where(n => n.Date >= start && n.Date < end)
+                .ToListAsync();
+
+            string? activeSsid = null;
+            var aggregated = new Dictionary<string, (long Dl, long Ul)>();
+
+            foreach (var item in rawGroups)
+            {
+                string name = item.NetworkName;
+                if (name.Equals("Unknown Network", StringComparison.OrdinalIgnoreCase) || string.IsNullOrWhiteSpace(name))
+                {
+                    activeSsid ??= DataSense.Core.Services.NetworkUsageAggregator.GetActiveWifiSsid();
+                    name = !string.IsNullOrEmpty(activeSsid) ? activeSsid : "Connected Network";
+                }
+
+                if (aggregated.TryGetValue(name, out var current))
+                {
+                    aggregated[name] = (current.Dl + item.BytesDownloaded, current.Ul + item.BytesUploaded);
+                }
+                else
+                {
+                    aggregated[name] = (item.BytesDownloaded, item.BytesUploaded);
+                }
+            }
+
+            return aggregated
+                .OrderByDescending(g => g.Value.Dl + g.Value.Ul)
+                .Select(g => new MonthlyNetworkUsageInfo
+                {
+                    NetworkName = g.Key,
+                    BytesDownloaded = g.Value.Dl,
+                    BytesUploaded = g.Value.Ul
+                }).ToList();
         }
 
         public async Task<UsageStats> GetTotalUsageForMonthAsync(int year, int month)

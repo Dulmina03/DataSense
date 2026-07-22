@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -7,6 +8,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using DataSense.Core.Domain;
 using DataSense.Core.Repositories;
+using DataSense.Core.Services;
 using DataSense.UI.Services;
 using LiveChartsCore;
 using LiveChartsCore.Defaults;
@@ -21,6 +23,7 @@ namespace DataSense.UI.ViewModels
     {
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly ExportService _exportService;
+        private readonly NetworkUsageAggregator _aggregator;
 
         [ObservableProperty] private int _selectedYear = DateTime.Now.Year;
 
@@ -36,6 +39,7 @@ namespace DataSense.UI.ViewModels
         public ObservableCollection<Axis> YAxes { get; } = new();
         public ObservableCollection<DailyUsageDisplay> DailyRows { get; } = new();
         public ObservableCollection<ProcessUsageDisplay> ProcessRows { get; } = new();
+        public ObservableCollection<NetworkUsageDisplay> NetworkRows { get; } = new();
 
         // Dark canvas background for history chart
         public DrawMarginFrame HistoryDrawMarginFrame { get; } = new DrawMarginFrame
@@ -54,10 +58,59 @@ namespace DataSense.UI.ViewModels
         // Derived 1-based month from index
         private int SelectedMonth => SelectedMonthIndex + 1;
 
-        public HistoryViewModel(IServiceScopeFactory scopeFactory, ExportService exportService)
+        public HistoryViewModel(IServiceScopeFactory scopeFactory, ExportService exportService, NetworkUsageAggregator aggregator)
         {
             _scopeFactory = scopeFactory;
             _exportService = exportService;
+            _aggregator = aggregator;
+
+            // Subscribe to live speed updates to refresh today's network usage in real-time
+            _aggregator.SpeedUpdated += OnSpeedUpdated;
+        }
+
+        private void OnSpeedUpdated(long downloadBps, long uploadBps)
+        {
+            // Refresh NetworkRows on the UI thread with live today's data
+            Application.Current?.Dispatcher.InvokeAsync(RefreshNetworkRowsLive);
+        }
+
+        private void RefreshNetworkRowsLive()
+        {
+            var stats = _aggregator.GetCurrentNetworkStats();
+            var seen = new HashSet<string>();
+
+            foreach (var kvp in stats.OrderByDescending(k => k.Value.BytesDownloaded + k.Value.BytesUploaded))
+            {
+                seen.Add(kvp.Key);
+                var existing = NetworkRows.FirstOrDefault(r => r.NetworkName == kvp.Key);
+                string dlStr = FormatBytes(kvp.Value.BytesDownloaded);
+                string ulStr = FormatBytes(kvp.Value.BytesUploaded);
+                string totStr = FormatBytes(kvp.Value.BytesDownloaded + kvp.Value.BytesUploaded);
+
+                if (existing != null)
+                {
+                    existing.Downloaded = dlStr;
+                    existing.Uploaded = ulStr;
+                    existing.Total = totStr;
+                }
+                else
+                {
+                    NetworkRows.Add(new NetworkUsageDisplay
+                    {
+                        NetworkName = kvp.Key,
+                        Downloaded = dlStr,
+                        Uploaded = ulStr,
+                        Total = totStr
+                    });
+                }
+            }
+
+            // Remove rows for networks no longer in live stats
+            for (int i = NetworkRows.Count - 1; i >= 0; i--)
+            {
+                if (!seen.Contains(NetworkRows[i].NetworkName))
+                    NetworkRows.RemoveAt(i);
+            }
         }
 
         [RelayCommand]
@@ -83,7 +136,7 @@ namespace DataSense.UI.ViewModels
             YAxes.Clear();
 
             int daysInMonth = DateTime.DaysInMonth(SelectedYear, SelectedMonth);
-            var totalValues = new System.Collections.Generic.List<ObservableValue>();
+            var totalValues = new List<ObservableValue>();
             var labels = new string[daysInMonth];
 
             for (int day = 1; day <= daysInMonth; day++)
@@ -99,9 +152,9 @@ namespace DataSense.UI.ViewModels
             }
 
             var gradientPaint = new LinearGradientPaint(
-                new[] { new SKColor(52, 211, 153), new SKColor(99, 102, 241) }, // Emerald Green (#34D399) to Indigo (#6366F1)
-                new SKPoint(0.5f, 0f), // Start (top)
-                new SKPoint(0.5f, 1f)  // End (bottom)
+                new[] { new SKColor(52, 211, 153), new SKColor(99, 102, 241) },
+                new SKPoint(0.5f, 0f),
+                new SKPoint(0.5f, 1f)
             );
 
             DailyChartSeries.Add(new ColumnSeries<ObservableValue>
@@ -115,9 +168,9 @@ namespace DataSense.UI.ViewModels
                 Padding = 2
             });
 
-            XAxes.Add(new Axis 
-            { 
-                Labels = labels, 
+            XAxes.Add(new Axis
+            {
+                Labels = labels,
                 LabelsPaint = new SolidColorPaint(new SKColor(160, 174, 192)),
                 SeparatorsPaint = new SolidColorPaint(new SKColor(45, 55, 72)) { StrokeThickness = 1 },
                 TextSize = 9,
@@ -158,6 +211,9 @@ namespace DataSense.UI.ViewModels
                     UploadedText = FormatBytes(p.Stats.BytesUploaded)
                 });
             }
+
+            // Initial network rows from live aggregator (today's real-time data)
+            RefreshNetworkRowsLive();
         }
 
         [RelayCommand]
@@ -191,7 +247,7 @@ namespace DataSense.UI.ViewModels
             MessageBox.Show($"PDF exported to:\n{dlg.FileName}", "Export Complete", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
-        private async Task<(System.Collections.Generic.List<DailyUsageInfo>, System.Collections.Generic.List<ProcessUsageInfo>)> FetchDataAsync()
+        private async Task<(List<DailyUsageInfo>, List<ProcessUsageInfo>)> FetchDataAsync()
         {
             using var scope = _scopeFactory.CreateScope();
             var repo = scope.ServiceProvider.GetRequiredService<IUsageRepository>();
@@ -219,4 +275,14 @@ namespace DataSense.UI.ViewModels
         public string Uploaded { get; set; } = string.Empty;
         public string Total { get; set; } = string.Empty;
     }
+
+    public partial class NetworkUsageDisplay : ObservableObject
+    {
+        [ObservableProperty] private string _networkName = string.Empty;
+        [ObservableProperty] private string _downloaded = string.Empty;
+        [ObservableProperty] private string _uploaded = string.Empty;
+        [ObservableProperty] private string _total = string.Empty;
+    }
 }
+
+

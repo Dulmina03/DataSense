@@ -10,6 +10,7 @@ namespace DataSense.Data
         public DbSet<NetworkAdapterEntity> Adapters { get; set; }
         public DbSet<ProcessUsageEntity> ProcessUsages { get; set; }
         public DbSet<DailyUsageEntity> DailyUsages { get; set; }
+        public DbSet<NetworkUsageEntity> NetworkUsages { get; set; }
 
         public DataSenseDbContext(DbContextOptions<DataSenseDbContext> options) : base(options)
         {
@@ -37,6 +38,9 @@ namespace DataSense.Data
 
             modelBuilder.Entity<DailyUsageEntity>()
                 .HasIndex(d => d.Date).IsUnique();
+
+            modelBuilder.Entity<NetworkUsageEntity>()
+                .HasIndex(n => new { n.NetworkName, n.Date }).IsUnique();
         }
     }
 }

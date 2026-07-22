@@ -11,5 +11,6 @@ namespace DataSense.Core.Domain
         public string Protocol { get; set; } = string.Empty;
         public long BytesLength { get; set; }
         public bool IsUpload { get; set; } // true if sending from local IP
+        public string NetworkName { get; set; } = string.Empty;
     }
 }

@@ -506,7 +506,14 @@
                                                           Background="Transparent"
                                                           BorderThickness="0"
                                                           VerticalAlignment="Center"
-                                                          HorizontalAlignment="Right"/>
+                                                          HorizontalAlignment="Right"
+                                                          Style="{StaticResource {x:Static ToolBar.ComboBoxStyleKey}}">
+                                                    <ComboBox.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <TextBlock Text="{Binding}" Foreground="#00E5FF" FontWeight="Bold" FontSize="13"/>
+                                                        </DataTemplate>
+                                                    </ComboBox.ItemTemplate>
+                                                </ComboBox>
                                             </Grid>
                                         </Border>
  
@@ -561,7 +568,14 @@
                                                           Background="Transparent"
                                                           BorderThickness="0"
                                                           VerticalAlignment="Center"
-                                                          HorizontalAlignment="Right"/>
+                                                          HorizontalAlignment="Right"
+                                                          Style="{StaticResource {x:Static ToolBar.ComboBoxStyleKey}}">
+                                                    <ComboBox.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <TextBlock Text="{Binding}" Foreground="#E91E63" FontWeight="Bold" FontSize="13"/>
+                                                        </DataTemplate>
+                                                    </ComboBox.ItemTemplate>
+                                                </ComboBox>
                                             </Grid>
                                         </Border>
  
@@ -733,6 +747,7 @@
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="3*" MinHeight="200"/>
                             <RowDefinition Height="2*" MinHeight="140"/>
+                            <RowDefinition Height="Auto" MinHeight="120"/>
                         </Grid.RowDefinitions>
 
                         <!-- Controls Panel -->
@@ -812,7 +827,7 @@
                             </materialDesign:Card>
 
                             <!-- Process summary table -->
-                            <materialDesign:Card Grid.Column="1" Background="{StaticResource MaterialDesignCardBackground}" Padding="16">
+                             <materialDesign:Card Grid.Column="1" Background="{StaticResource MaterialDesignCardBackground}" Padding="16">
                                 <Grid>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto"/>
@@ -831,6 +846,30 @@
                                 </Grid>
                             </materialDesign:Card>
                         </Grid>
+
+                                <!-- Daily Network Usage Table (Row 3) -->
+                        <materialDesign:Card Grid.Row="3" Background="{StaticResource MaterialDesignCardBackground}" Margin="0,16,0,0" Padding="16">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                <DockPanel Grid.Row="0" Margin="0,0,0,8">
+                                    <materialDesign:PackIcon Kind="Wifi" Foreground="#00E5FF" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                    <TextBlock Text="Daily Usage by Network (Real-time)" FontSize="15" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+                                </DockPanel>
+                                <ListView Grid.Row="1" ItemsSource="{Binding NetworkRows}" MaxHeight="160">
+                                    <ListView.View>
+                                        <GridView>
+                                            <GridViewColumn Header="Network / Wi-Fi SSID" DisplayMemberBinding="{Binding NetworkName}" Width="220"/>
+                                            <GridViewColumn Header="↓ Downloaded" DisplayMemberBinding="{Binding Downloaded}" Width="120"/>
+                                            <GridViewColumn Header="↑ Uploaded" DisplayMemberBinding="{Binding Uploaded}" Width="120"/>
+                                            <GridViewColumn Header="Total" DisplayMemberBinding="{Binding Total}" Width="100"/>
+                                        </GridView>
+                                    </ListView.View>
+                                </ListView>
+                            </Grid>
+                        </materialDesign:Card>
                     </Grid>
                 </TabItem>
 
