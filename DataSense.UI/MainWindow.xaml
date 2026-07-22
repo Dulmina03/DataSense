@@ -847,27 +847,65 @@
                             </materialDesign:Card>
                         </Grid>
 
-                                <!-- Daily Network Usage Table (Row 3) -->
+                        <!-- Network Usage Table (Row 3) -->
                         <materialDesign:Card Grid.Row="3" Background="{StaticResource MaterialDesignCardBackground}" Margin="0,16,0,0" Padding="16">
                             <Grid>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
+                                
+                                <!-- Card Header with Title & Month/Year Selectors -->
                                 <DockPanel Grid.Row="0" Margin="0,0,0,8">
-                                    <materialDesign:PackIcon Kind="Wifi" Foreground="#00E5FF" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                    <TextBlock Text="Daily Usage by Network (Real-time)" FontSize="15" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+                                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Left" VerticalAlignment="Center">
+                                        <materialDesign:PackIcon Kind="Wifi" Foreground="#00E5FF" Width="20" Height="20" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                        <TextBlock Text="Usage by Network" FontSize="16" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+                                    </StackPanel>
+
+                                    <!-- Quick Month & Year Selector inside Card -->
+                                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                        <TextBlock Text="Month:" Foreground="#A0AEC0" VerticalAlignment="Center" Margin="0,0,6,0" FontSize="12" FontWeight="SemiBold"/>
+                                        <ComboBox ItemsSource="{Binding MonthOptions}" SelectedIndex="{Binding SelectedMonthIndex}" Foreground="White" Width="110" Margin="0,0,12,0" FontSize="12"/>
+                                        
+                                        <TextBlock Text="Year:" Foreground="#A0AEC0" VerticalAlignment="Center" Margin="0,0,6,0" FontSize="12" FontWeight="SemiBold"/>
+                                        <ComboBox ItemsSource="{Binding YearOptions}" SelectedItem="{Binding SelectedYear}" Foreground="White" Width="75" FontSize="12"/>
+                                    </StackPanel>
                                 </DockPanel>
-                                <ListView Grid.Row="1" ItemsSource="{Binding NetworkRows}" MaxHeight="160">
-                                    <ListView.View>
-                                        <GridView>
-                                            <GridViewColumn Header="Network / Wi-Fi SSID" DisplayMemberBinding="{Binding NetworkName}" Width="220"/>
-                                            <GridViewColumn Header="↓ Downloaded" DisplayMemberBinding="{Binding Downloaded}" Width="120"/>
-                                            <GridViewColumn Header="↑ Uploaded" DisplayMemberBinding="{Binding Uploaded}" Width="120"/>
-                                            <GridViewColumn Header="Total" DisplayMemberBinding="{Binding Total}" Width="100"/>
-                                        </GridView>
-                                    </ListView.View>
-                                </ListView>
+
+                                <!-- Sub Tabs: Daily Usage & Monthly Usage -->
+                                <TabControl Grid.Row="1" Background="Transparent" BorderThickness="0">
+                                    <!-- TAB 1: DAILY USAGE -->
+                                    <TabItem Header="Daily Usage (Today)" Foreground="#00E5FF">
+                                        <Grid Margin="0,12,0,0">
+                                            <ListView ItemsSource="{Binding NetworkRows}" MaxHeight="180">
+                                                <ListView.View>
+                                                    <GridView>
+                                                        <GridViewColumn Header="Network / Wi-Fi SSID" DisplayMemberBinding="{Binding NetworkName}" Width="260"/>
+                                                        <GridViewColumn Header="↓ Downloaded" DisplayMemberBinding="{Binding Downloaded}" Width="130"/>
+                                                        <GridViewColumn Header="↑ Uploaded" DisplayMemberBinding="{Binding Uploaded}" Width="130"/>
+                                                        <GridViewColumn Header="Total" DisplayMemberBinding="{Binding Total}" Width="120"/>
+                                                    </GridView>
+                                                </ListView.View>
+                                            </ListView>
+                                        </Grid>
+                                    </TabItem>
+
+                                    <!-- TAB 2: MONTHLY USAGE -->
+                                    <TabItem Header="Monthly Usage (Selected Month)" Foreground="#34D399">
+                                        <Grid Margin="0,12,0,0">
+                                            <ListView ItemsSource="{Binding MonthlyNetworkRows}" MaxHeight="180">
+                                                <ListView.View>
+                                                    <GridView>
+                                                        <GridViewColumn Header="Network / Wi-Fi SSID" DisplayMemberBinding="{Binding NetworkName}" Width="260"/>
+                                                        <GridViewColumn Header="↓ Downloaded" DisplayMemberBinding="{Binding Downloaded}" Width="130"/>
+                                                        <GridViewColumn Header="↑ Uploaded" DisplayMemberBinding="{Binding Uploaded}" Width="130"/>
+                                                        <GridViewColumn Header="Total" DisplayMemberBinding="{Binding Total}" Width="120"/>
+                                                    </GridView>
+                                                </ListView.View>
+                                            </ListView>
+                                        </Grid>
+                                    </TabItem>
+                                </TabControl>
                             </Grid>
                         </materialDesign:Card>
                     </Grid>

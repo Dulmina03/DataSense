@@ -40,6 +40,7 @@ namespace DataSense.UI.ViewModels
         public ObservableCollection<DailyUsageDisplay> DailyRows { get; } = new();
         public ObservableCollection<ProcessUsageDisplay> ProcessRows { get; } = new();
         public ObservableCollection<NetworkUsageDisplay> NetworkRows { get; } = new();
+        public ObservableCollection<NetworkUsageDisplay> MonthlyNetworkRows { get; } = new();
 
         // Dark canvas background for history chart
         public DrawMarginFrame HistoryDrawMarginFrame { get; } = new DrawMarginFrame
@@ -57,6 +58,16 @@ namespace DataSense.UI.ViewModels
 
         // Derived 1-based month from index
         private int SelectedMonth => SelectedMonthIndex + 1;
+
+        partial void OnSelectedYearChanged(int value)
+        {
+            _ = LoadAsync();
+        }
+
+        partial void OnSelectedMonthIndexChanged(int value)
+        {
+            _ = LoadAsync();
+        }
 
         public HistoryViewModel(IServiceScopeFactory scopeFactory, ExportService exportService, NetworkUsageAggregator aggregator)
         {
@@ -214,6 +225,20 @@ namespace DataSense.UI.ViewModels
 
             // Initial network rows from live aggregator (today's real-time data)
             RefreshNetworkRowsLive();
+
+            // Monthly network rows from repository for selected month
+            var networkUsages = await repo.GetMonthlyNetworkUsagesAsync(SelectedYear, SelectedMonth);
+            MonthlyNetworkRows.Clear();
+            foreach (var n in networkUsages)
+            {
+                MonthlyNetworkRows.Add(new NetworkUsageDisplay
+                {
+                    NetworkName = n.NetworkName,
+                    Downloaded = FormatBytes(n.BytesDownloaded),
+                    Uploaded = FormatBytes(n.BytesUploaded),
+                    Total = FormatBytes(n.TotalBytes)
+                });
+            }
         }
 
         [RelayCommand]
