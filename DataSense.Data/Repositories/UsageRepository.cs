@@ -21,9 +21,10 @@ namespace DataSense.Data.Repositories
         public async Task SaveUsageAsync(DateTime date, long bytesDownloaded, long bytesUploaded, Dictionary<string, UsageStats> processUsages, Dictionary<string, UsageStats> networkUsages)
         {
             var dateOnly = date.Date;
+            var nextDay = dateOnly.AddDays(1);
 
-            // Update daily usage
-            var dailyUsage = await _context.DailyUsages.FirstOrDefaultAsync(d => d.Date == dateOnly);
+            // Update daily usage (range query prevents EF Core SQLite string mismatch on date equality)
+            var dailyUsage = await _context.DailyUsages.FirstOrDefaultAsync(d => d.Date >= dateOnly && d.Date < nextDay);
             if (dailyUsage == null)
             {
                 dailyUsage = new DailyUsageEntity { Date = dateOnly };
@@ -35,7 +36,7 @@ namespace DataSense.Data.Repositories
             // Update process usages
             var processNames = processUsages.Keys.ToList();
             var existingProcessUsages = await _context.ProcessUsages
-                .Where(p => p.Date == dateOnly && processNames.Contains(p.ProcessName))
+                .Where(p => p.Date >= dateOnly && p.Date < nextDay && processNames.Contains(p.ProcessName))
                 .ToDictionaryAsync(p => p.ProcessName);
 
             foreach (var pu in processUsages)
@@ -60,7 +61,7 @@ namespace DataSense.Data.Repositories
             // Update network usages
             var networkNames = networkUsages.Keys.ToList();
             var existingNetworkUsages = await _context.NetworkUsages
-                .Where(n => n.Date == dateOnly && networkNames.Contains(n.NetworkName))
+                .Where(n => n.Date >= dateOnly && n.Date < nextDay && networkNames.Contains(n.NetworkName))
                 .ToDictionaryAsync(n => n.NetworkName);
 
             foreach (var nu in networkUsages)
@@ -91,6 +92,7 @@ namespace DataSense.Data.Repositories
             var end = start.AddMonths(1);
 
             var rawGroups = await _context.NetworkUsages
+                .AsNoTracking()
                 .Where(n => n.Date >= start && n.Date < end)
                 .ToListAsync();
 
@@ -132,6 +134,7 @@ namespace DataSense.Data.Repositories
             var end = start.AddMonths(1);
 
             var usages = await _context.DailyUsages
+                .AsNoTracking()
                 .Where(d => d.Date >= start && d.Date < end)
                 .ToListAsync();
 
@@ -144,9 +147,11 @@ namespace DataSense.Data.Repositories
 
         public async Task<List<ProcessUsageInfo>> GetProcessUsagesForDateAsync(DateTime date)
         {
-            var dateOnly = date.Date;
+            var start = date.Date;
+            var end = start.AddDays(1);
             var entities = await _context.ProcessUsages
-                .Where(p => p.Date == dateOnly)
+                .AsNoTracking()
+                .Where(p => p.Date >= start && p.Date < end)
                 .ToListAsync();
 
             return entities.Select(e => new ProcessUsageInfo
@@ -161,8 +166,11 @@ namespace DataSense.Data.Repositories
         }
         public async Task<List<DailyUsageInfo>> GetDailyUsagesAsync(DateTime from, DateTime to)
         {
+            var start = from.Date;
+            var end = to.Date.AddDays(1);
             var entities = await _context.DailyUsages
-                .Where(d => d.Date >= from.Date && d.Date <= to.Date)
+                .AsNoTracking()
+                .Where(d => d.Date >= start && d.Date < end)
                 .OrderBy(d => d.Date)
                 .ToListAsync();
 
@@ -180,6 +188,7 @@ namespace DataSense.Data.Repositories
             var end = start.AddMonths(1);
 
             var groups = await _context.ProcessUsages
+                .AsNoTracking()
                 .Where(p => p.Date >= start && p.Date < end)
                 .GroupBy(p => p.ProcessName)
                 .Select(g => new
@@ -208,6 +217,7 @@ namespace DataSense.Data.Repositories
             var end = to.Date.AddDays(1); // include the end date fully
 
             var groups = await _context.ProcessUsages
+                .AsNoTracking()
                 .Where(p => p.Date >= start && p.Date < end)
                 .GroupBy(p => p.ProcessName)
                 .Select(g => new

@@ -102,6 +102,23 @@ namespace DataSense.UI
         {
             try
             {
+                // Subscribe to ProcessExit and SessionEnding for guaranteed synchronous flush on shutdown/restart
+                AppDomain.CurrentDomain.ProcessExit += (s, ev) => PerformShutdownFlush();
+                if (Current != null)
+                {
+                    Current.SessionEnding += (s, ev) => PerformShutdownFlush();
+                }
+
+                // Initialize Database schema and PRAGMAs once at startup
+                using (var scope = _host.Services.CreateScope())
+                {
+                    var dbContext = scope.ServiceProvider.GetRequiredService<DataSenseDbContext>();
+                    dbContext.Database.EnsureCreated();
+                    dbContext.Database.ExecuteSqlRaw("PRAGMA journal_mode=WAL;");
+                    dbContext.Database.ExecuteSqlRaw("PRAGMA synchronous=NORMAL;");
+                    dbContext.Database.ExecuteSqlRaw("PRAGMA busy_timeout=5000;");
+                }
+
                 await _host.StartAsync();
                 var mainWindow = _host.Services.GetRequiredService<MainWindow>();
                 mainWindow.Show();
@@ -114,10 +131,24 @@ namespace DataSense.UI
             }
         }
 
+        private void PerformShutdownFlush()
+        {
+            try
+            {
+                var aggregator = _host?.Services?.GetService<DataSense.Core.Services.NetworkUsageAggregator>();
+                aggregator?.FlushSync();
+            }
+            catch { }
+        }
+
         private async void OnExit(object sender, ExitEventArgs e)
         {
-            await _host.StopAsync();
-            _host.Dispose();
+            PerformShutdownFlush();
+            if (_host != null)
+            {
+                await _host.StopAsync();
+                _host.Dispose();
+            }
             Log.CloseAndFlush();
         }
     }

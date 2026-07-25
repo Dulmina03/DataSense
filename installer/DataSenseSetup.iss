@@ -31,7 +31,7 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 
 [Files]
 ; Main application files from publish folder
-Source: "output\DataSense.UI.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\..\publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; Npcap installer (bundled for offline install)
 Source: "npcap-installer.exe"; DestDir: "{tmp}"; Flags: deleteafterinstall
 

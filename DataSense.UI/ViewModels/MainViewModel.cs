@@ -160,6 +160,11 @@ namespace DataSense.UI.ViewModels
 
         private readonly DispatcherTimer _statsRefreshTimer;
         private readonly NetSpeedMeterService _netSpeedMeterService;
+        private readonly IPacketCaptureService _packetCaptureService;
+
+        private long _todayBytesAcc;
+        private long _weeklyBytesAcc;
+        private long _monthlyBytesAcc;
 
         public MainViewModel(
             NetworkUsageAggregator aggregator,
@@ -167,6 +172,7 @@ namespace DataSense.UI.ViewModels
             StartupService startupService,
             DataLimitAlertService alertService,
             INetworkInterfaceService networkService,
+            IPacketCaptureService packetCaptureService,
             HistoryViewModel historyViewModel,
             SpeedTestService speedTestService,
             NetSpeedMeterService netSpeedMeterService)
@@ -176,6 +182,7 @@ namespace DataSense.UI.ViewModels
             _startupService = startupService;
             _alertService = alertService;
             _networkService = networkService;
+            _packetCaptureService = packetCaptureService;
             _speedTestService = speedTestService;
             History = historyViewModel;
             _netSpeedMeterService = netSpeedMeterService;
@@ -190,6 +197,52 @@ namespace DataSense.UI.ViewModels
             _netSpeedMeterService.SetDarkTheme(IsDarkTheme);
             if (_isNetSpeedMeterEnabled)
                 _netSpeedMeterService.SetEnabled(true);
+
+            // Preload usage totals for today, week, and month so the UI shows values immediately
+            Task.Run(async () =>
+            {
+                using var scope = _scopeFactory.CreateScope();
+                var repo = scope.ServiceProvider.GetRequiredService<IUsageRepository>();
+                var now = DateTime.Now;
+
+                // DB total for today
+                var dailyStats = await repo.GetDailyUsagesAsync(now.Date, now.Date);
+                var todayStats = dailyStats.FirstOrDefault();
+                long dbTodayBytes = todayStats != null ? (todayStats.BytesDownloaded + todayStats.BytesUploaded) : 0;
+
+                // DB total for the last 7 days (weekly)
+                var weeklyStats = await repo.GetDailyUsagesAsync(now.AddDays(-6), now);
+                long dbWeeklyBytes = weeklyStats.Sum(w => w.BytesDownloaded + w.BytesUploaded);
+
+                // DB total for current month
+                var monthlyStats = await repo.GetTotalUsageForMonthAsync(now.Year, now.Month);
+                long dbMonthlyBytes = monthlyStats.BytesDownloaded + monthlyStats.BytesUploaded;
+
+                // In‑memory buffered bytes not yet flushed to DB
+                var liveProcessStats = _aggregator.GetCurrentProcessStats();
+                long liveBufferedBytes = liveProcessStats.Values.Sum(s => s.BytesDownloaded + s.BytesUploaded);
+
+                // Captured minute‑bucket total (persisted across restarts)
+                var (dl, ul) = _aggregator.GetTodayTotalCaptured();
+                long liveTodayBytes = dl + ul;
+
+                // Calculate accumulators using the maximum of existing and newly calculated values
+                long calculatedToday = Math.Max(dbTodayBytes + liveBufferedBytes, liveTodayBytes);
+                long calculatedWeekly = Math.Max(_weeklyBytesAcc, Math.Max(dbWeeklyBytes + liveBufferedBytes, liveTodayBytes));
+                long calculatedMonthly = Math.Max(_monthlyBytesAcc, Math.Max(dbMonthlyBytes + liveBufferedBytes, liveTodayBytes));
+
+                _todayBytesAcc = Math.Max(_todayBytesAcc, calculatedToday);
+                _weeklyBytesAcc = Math.Max(_weeklyBytesAcc, calculatedWeekly);
+                _monthlyBytesAcc = Math.Max(_monthlyBytesAcc, calculatedMonthly);
+
+                // Update UI on the UI thread
+                App.Current?.Dispatcher.InvokeAsync(() =>
+                {
+                    DailyUsageText = FormatBytes(_todayBytesAcc);
+                    WeeklyUsageText = FormatBytes(_weeklyBytesAcc);
+                    MonthlyUsageText = FormatBytes(_monthlyBytesAcc);
+                });
+            });
 
             TopProcesses = new ObservableCollection<ProcessUsageDisplay>();
 
@@ -213,10 +266,36 @@ namespace DataSense.UI.ViewModels
                 NamePaint = new SolidColorPaint(new SKColor(120, 140, 160)),
                 LabelsPaint = new SolidColorPaint(new SKColor(120, 140, 160)),
                 SeparatorsPaint = new SolidColorPaint(new SKColor(40, 52, 68)) { StrokeThickness = 1 },
-                SubseparatorsPaint = new SolidColorPaint(new SKColor(30, 40, 55)) { StrokeThickness = 0.5f },
-                TextSize = 10,
                 ShowSeparatorLines = true
             });
+
+            var dlLine = new LineSeries<ObservableValue>
+            {
+                Values = new ObservableCollection<ObservableValue>(),
+                Name = "Download Speed",
+                Stroke = new SolidColorPaint(SKColors.Cyan) { StrokeThickness = 2.5f },
+                Fill = new LinearGradientPaint(new[] { new SKColor(0, 229, 255, 80), new SKColor(0, 229, 255, 0) }, new SKPoint(0.5f, 0), new SKPoint(0.5f, 1)),
+                GeometrySize = 0,
+                LineSmoothness = 0.5
+            };
+
+            var ulLine = new LineSeries<ObservableValue>
+            {
+                Values = new ObservableCollection<ObservableValue>(),
+                Name = "Upload Speed",
+                Stroke = new SolidColorPaint(SKColors.DeepPink) { StrokeThickness = 2.5f },
+                Fill = new LinearGradientPaint(new[] { new SKColor(233, 30, 99, 80), new SKColor(233, 30, 99, 0) }, new SKPoint(0.5f, 0), new SKPoint(0.5f, 1)),
+                GeometrySize = 0,
+                LineSmoothness = 0.5
+            };
+
+            SpeedSeries = new ObservableCollection<ISeries> { dlLine, ulLine };
+
+            for (int i = 0; i < 60; i++)
+            {
+                ((ObservableCollection<ObservableValue>)SpeedSeries[0].Values!).Add(new ObservableValue(0));
+                ((ObservableCollection<ObservableValue>)SpeedSeries[1].Values!).Add(new ObservableValue(0));
+            }
 
             // Peak Monthly chart axes — dark themed
             PeakMonthlyXAxes.Add(new Axis
@@ -232,49 +311,6 @@ namespace DataSense.UI.ViewModels
                 TextSize = 10
             });
 
-            // Cyan gradient download + green gradient upload — matching the screenshot
-            SpeedSeries = new ObservableCollection<ISeries>
-            {
-                new LineSeries<ObservableValue>
-                {
-                    Values = new ObservableCollection<ObservableValue>(),
-                    Name = "Download",
-                    // Bright cyan stroke like the screenshot
-                    Stroke = new SolidColorPaint(new SKColor(0, 229, 255)) { StrokeThickness = 2 },
-                    GeometryFill = null,
-                    GeometryStroke = null,
-                    // Semi-transparent cyan fill for the glowing area effect
-                    Fill = new LinearGradientPaint(
-                        new[] { new SKColor(0, 229, 255, 120), new SKColor(0, 229, 255, 8) },
-                        new SKPoint(0.5f, 0f),
-                        new SKPoint(0.5f, 1f)
-                    ),
-                    LineSmoothness = 0.6
-                },
-                new LineSeries<ObservableValue>
-                {
-                    Values = new ObservableCollection<ObservableValue>(),
-                    Name = "Upload",
-                    // Bright green stroke like the screenshot
-                    Stroke = new SolidColorPaint(new SKColor(0, 230, 118)) { StrokeThickness = 2 },
-                    GeometryFill = null,
-                    GeometryStroke = null,
-                    // Semi-transparent green fill for the glowing area effect
-                    Fill = new LinearGradientPaint(
-                        new[] { new SKColor(0, 230, 118, 100), new SKColor(0, 230, 118, 8) },
-                        new SKPoint(0.5f, 0f),
-                        new SKPoint(0.5f, 1f)
-                    ),
-                    LineSmoothness = 0.6
-                }
-            };
-
-            for (int i = 0; i < 60; i++)
-            {
-                ((ObservableCollection<ObservableValue>)SpeedSeries[0].Values!).Add(new ObservableValue(0));
-                ((ObservableCollection<ObservableValue>)SpeedSeries[1].Values!).Add(new ObservableValue(0));
-            }
-
             // Load adapters
             foreach (var adapter in _networkService.GetAvailableAdapters())
             {
@@ -282,12 +318,25 @@ namespace DataSense.UI.ViewModels
             }
             SelectedAdapter = AvailableAdapters.FirstOrDefault(a => !a.IsLoopback) ?? AvailableAdapters.FirstOrDefault();
 
+            // Start packet capture on the selected adapter
+            if (SelectedAdapter != null)
+            {
+                try
+                {
+                    _packetCaptureService.StartCapture(new[] { SelectedAdapter.Id });
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Failed to start packet capture: {ex}");
+                }
+            }
+
             _aggregator.SpeedUpdated += OnSpeedUpdated;
 
             // Timer to refresh summaries, limits, and charts
             _statsRefreshTimer = new DispatcherTimer
             {
-                Interval = TimeSpan.FromSeconds(5)
+                Interval = TimeSpan.FromSeconds(2)
             };
             _statsRefreshTimer.Tick += async (s, e) => await RefreshStatsAsync();
             _statsRefreshTimer.Start();
@@ -308,6 +357,19 @@ namespace DataSense.UI.ViewModels
                 DownloadSpeedText = FormatBytes(downloadBps) + "/s";
                 UploadSpeedText = FormatBytes(uploadBps) + "/s";
 
+                // Increment real-time daily, weekly, and monthly byte accumulators every second
+                long delta = downloadBps + uploadBps;
+                if (delta > 0)
+                {
+                    _todayBytesAcc += delta;
+                    _weeklyBytesAcc += delta;
+                    _monthlyBytesAcc += delta;
+
+                    DailyUsageText = FormatBytes(_todayBytesAcc);
+                    WeeklyUsageText = FormatBytes(_weeklyBytesAcc);
+                    MonthlyUsageText = FormatBytes(_monthlyBytesAcc);
+                }
+
                 var dlSeries = (LineSeries<ObservableValue>)SpeedSeries[0];
                 var ulSeries = (LineSeries<ObservableValue>)SpeedSeries[1];
 
@@ -322,8 +384,6 @@ namespace DataSense.UI.ViewModels
                     dlValues.RemoveAt(0);
                     ulValues.RemoveAt(0);
                 }
-                // Note: UpdateTopProcesses is called from RefreshStatsAsync (every 5s)
-                // to include both DB daily totals and live data
             });
         }
 
@@ -385,16 +445,28 @@ namespace DataSense.UI.ViewModels
 
                 var now = DateTime.Now;
 
+                var (todayLiveDl, todayLiveUl) = _aggregator.GetTodayTotalCaptured();
+                long liveTodayBytes = todayLiveDl + todayLiveUl;
+
                 // 1. Monthly Usage
                 var monthlyStats = await repo.GetTotalUsageForMonthAsync(now.Year, now.Month);
                 long monthlyBytes = monthlyStats.BytesDownloaded + monthlyStats.BytesUploaded;
-                MonthlyUsageText = FormatBytes(monthlyBytes);
 
-                // 2. Today's Daily Usage + per-app totals
+                // Add in-memory bytes not yet flushed to DB (buffered in the aggregator since last 5s flush)
+                var liveProcessStats = _aggregator.GetCurrentProcessStats();
+                long liveBufferedBytes = liveProcessStats.Values.Sum(s => s.BytesDownloaded + s.BytesUploaded);
+
+                _monthlyBytesAcc = Math.Max(_monthlyBytesAcc, Math.Max(monthlyBytes + liveBufferedBytes, liveTodayBytes));
+                MonthlyUsageText = FormatBytes(_monthlyBytesAcc);
+
+                // 2. Today's Daily Usage
                 var dailyStatsList = await repo.GetDailyUsagesAsync(now.Date, now.Date);
                 var todayStats = dailyStatsList.FirstOrDefault();
-                long todayBytes = todayStats != null ? todayStats.BytesDownloaded + todayStats.BytesUploaded : 0;
-                DailyUsageText = FormatBytes(todayBytes);
+                long dbTodayBytes = todayStats != null ? (todayStats.BytesDownloaded + todayStats.BytesUploaded) : 0;
+                long calculatedToday = Math.Max(dbTodayBytes + liveBufferedBytes, liveTodayBytes);
+
+                _todayBytesAcc = Math.Max(_todayBytesAcc, calculatedToday);
+                DailyUsageText = FormatBytes(_todayBytesAcc);
 
                 // Load today's per-app DB totals for the App-wise Usage panel
                 var dailyProcessList = await repo.GetProcessUsagesForDateAsync(now.Date);
@@ -402,12 +474,22 @@ namespace DataSense.UI.ViewModels
                     p => p.ProcessName,
                     p => (p.Stats.BytesDownloaded, p.Stats.BytesUploaded)
                 );
+                // Merge in-memory live process bytes not yet flushed
+                foreach (var kvp in liveProcessStats)
+                {
+                    if (dailyDbTotals.TryGetValue(kvp.Key, out var existing))
+                        dailyDbTotals[kvp.Key] = (existing.BytesDownloaded + kvp.Value.BytesDownloaded,
+                                                   existing.BytesUploaded + kvp.Value.BytesUploaded);
+                    else
+                        dailyDbTotals[kvp.Key] = (kvp.Value.BytesDownloaded, kvp.Value.BytesUploaded);
+                }
                 UpdateTopProcesses(dailyDbTotals);
 
                 // 2.5 Weekly Usage (last 7 days)
                 var weeklyStatsList = await repo.GetDailyUsagesAsync(now.AddDays(-6), now);
-                long weeklyBytes = weeklyStatsList.Sum(w => w.BytesDownloaded + w.BytesUploaded);
-                WeeklyUsageText = FormatBytes(weeklyBytes);
+                long calculatedWeekly = Math.Max(weeklyStatsList.Sum(w => w.BytesDownloaded + w.BytesUploaded) + liveBufferedBytes, liveTodayBytes);
+                _weeklyBytesAcc = Math.Max(_weeklyBytesAcc, calculatedWeekly);
+                WeeklyUsageText = FormatBytes(_weeklyBytesAcc);
 
                 // 3. Limit Calculations
                 double limitBytes = MonthlyLimitGb * 1024.0 * 1024.0 * 1024.0;
@@ -454,9 +536,10 @@ namespace DataSense.UI.ViewModels
                 // 5. Update Custom Time Period Stats in real time
                 await QueryCustomPeriodUsageAsync();
             }
-            catch
+            catch (Exception ex)
             {
-                // Silently handle DB access issues
+                // Log exception for debugging; UI will still update based on accumulators
+                System.Diagnostics.Debug.WriteLine($"RefreshStatsAsync error: {ex}");
             }
         }
 
@@ -599,6 +682,12 @@ namespace DataSense.UI.ViewModels
         {
             if (SelectedAdapter != null)
             {
+                try
+                {
+                    _packetCaptureService.StopCapture();
+                    _packetCaptureService.StartCapture(new[] { SelectedAdapter.Id });
+                }
+                catch { }
                 MessageBox.Show($"Monitoring switched to network adapter:\n{SelectedAdapter.Name}", "Adapter Changed", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }

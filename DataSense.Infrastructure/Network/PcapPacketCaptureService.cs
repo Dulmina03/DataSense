@@ -27,6 +27,7 @@ namespace DataSense.Infrastructure.Network
         public void StartCapture(IEnumerable<string> adapterIds)
         {
             var adapters = _networkInterfaceService.GetAvailableAdapters().ToDictionary(a => a.Id, a => a.NetworkName);
+            CaptureDeviceList.Instance.Refresh();
             var devices = CaptureDeviceList.Instance;
             foreach (var id in adapterIds)
             {
@@ -49,10 +50,24 @@ namespace DataSense.Infrastructure.Network
                     }
 
                     dev.OnPacketArrival += Device_OnPacketArrival;
-                    // Promiscuous mode to capture all packets on the interface
-                    dev.Open(DeviceModes.Promiscuous, 1000);
-                    dev.StartCapture();
-                    _activeDevices.Add(dev);
+                    try
+                    {
+                        // Try Promiscuous mode first; fall back to None mode if unsupported (common on Wi-Fi drivers)
+                        try
+                        {
+                            dev.Open(DeviceModes.Promiscuous, 1000);
+                        }
+                        catch
+                        {
+                            dev.Open(DeviceModes.None, 1000);
+                        }
+                        dev.StartCapture();
+                        _activeDevices.Add(dev);
+                    }
+                    catch
+                    {
+                        // Failed to open this specific device; continue with others
+                    }
                 }
             }
         }

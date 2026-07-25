@@ -44,11 +44,16 @@ namespace DataSense.Core.Services
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly ILogger<NetworkUsageAggregator> _logger;
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
+        // Tasks for background loops to allow graceful shutdown
+        private Task? _flushTask;
+        private Task? _speedTask;
+        private Task? _cleanupTask;
 
         public NetworkUsageAggregator(IServiceScopeFactory scopeFactory, ILogger<NetworkUsageAggregator> logger)
         {
             _scopeFactory = scopeFactory;
             _logger = logger;
+            LoadMinuteBuckets();
         }
 
         private static string? _cachedSsid;
@@ -238,6 +243,24 @@ namespace DataSense.Core.Services
         }
 
         /// <summary>
+        /// Returns total downloaded and uploaded bytes for today from the minute buckets log.
+        /// </summary>
+        public (long Downloaded, long Uploaded) GetTodayTotalCaptured()
+        {
+            long dl = 0, ul = 0;
+            var today = DateTime.Today;
+            foreach (var kvp in _minuteBuckets)
+            {
+                if (kvp.Key.Date == today)
+                {
+                    dl += kvp.Value.Downloaded;
+                    ul += kvp.Value.Uploaded;
+                }
+            }
+            return (dl, ul);
+        }
+
+        /// <summary>
         /// Returns per-process totals for the given time range from the minute-bucket log.
         /// </summary>
         public List<(string ProcessName, long Downloaded, long Uploaded)> GetProcessUsageForTimeRange(TimeSpan from, TimeSpan to)
@@ -266,9 +289,10 @@ namespace DataSense.Core.Services
         public Task StartAsync(CancellationToken cancellationToken)
         {
             LoadMinuteBuckets();
-            Task.Run(() => FlushLoop(_cts.Token));
-            Task.Run(() => SpeedLoop(_cts.Token));
-            Task.Run(() => BucketCleanupLoop(_cts.Token));
+            // Store tasks so we can await them on shutdown
+            _flushTask = Task.Run(() => FlushLoop(_cts.Token));
+            _speedTask = Task.Run(() => SpeedLoop(_cts.Token));
+            _cleanupTask = Task.Run(() => BucketCleanupLoop(_cts.Token));
             return Task.CompletedTask;
         }
 
@@ -309,7 +333,19 @@ namespace DataSense.Core.Services
             }
         }
 
-        private async Task FlushAsync()
+        public void FlushSync()
+        {
+            try
+            {
+                FlushSyncInternal();
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error in synchronous exit flush");
+            }
+        }
+
+        private void FlushSyncInternal()
         {
             long downloaded = Interlocked.Exchange(ref _totalDownloaded, 0);
             long uploaded = Interlocked.Exchange(ref _totalUploaded, 0);
@@ -317,50 +353,61 @@ namespace DataSense.Core.Services
             var currentStats = Interlocked.Exchange(ref _processStats, new ConcurrentDictionary<string, UsageStats>());
             var currentNetStats = Interlocked.Exchange(ref _networkStats, new ConcurrentDictionary<string, UsageStats>());
 
-            if (downloaded == 0 && uploaded == 0 && currentStats.IsEmpty && currentNetStats.IsEmpty) return;
-
-            try
+            if (downloaded > 0 || uploaded > 0 || !currentStats.IsEmpty || !currentNetStats.IsEmpty)
             {
-                using var scope = _scopeFactory.CreateScope();
-                var repo = scope.ServiceProvider.GetRequiredService<IUsageRepository>();
-
-                var processDict = currentStats.ToDictionary(k => k.Key, v => v.Value);
-                var networkDict = currentNetStats.ToDictionary(k => k.Key, v => v.Value);
-                await repo.SaveUsageAsync(DateTime.Now, downloaded, uploaded, processDict, networkDict);
-                SaveMinuteBuckets();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error saving network usage to database");
-
-                // Re-add failed bytes so we don't lose data
-                Interlocked.Add(ref _totalDownloaded, downloaded);
-                Interlocked.Add(ref _totalUploaded, uploaded);
-                foreach (var kvp in currentStats)
+                try
                 {
-                    var stats = _processStats.GetOrAdd(kvp.Key, _ => new UsageStats());
-                    lock (stats)
+                    using var scope = _scopeFactory.CreateScope();
+                    var repo = scope.ServiceProvider.GetRequiredService<IUsageRepository>();
+
+                    var processDict = currentStats.ToDictionary(k => k.Key, v => v.Value);
+                    var networkDict = currentNetStats.ToDictionary(k => k.Key, v => v.Value);
+                    repo.SaveUsageAsync(DateTime.Now, downloaded, uploaded, processDict, networkDict).GetAwaiter().GetResult();
+                }
+                catch (Exception ex)
+                {
+                    _logger?.LogError(ex, "Error saving network usage to database during flush");
+
+                    // Re-add failed bytes so we don't lose data
+                    Interlocked.Add(ref _totalDownloaded, downloaded);
+                    Interlocked.Add(ref _totalUploaded, uploaded);
+                    foreach (var kvp in currentStats)
                     {
-                        stats.BytesDownloaded += kvp.Value.BytesDownloaded;
-                        stats.BytesUploaded += kvp.Value.BytesUploaded;
+                        var stats = _processStats.GetOrAdd(kvp.Key, _ => new UsageStats());
+                        lock (stats)
+                        {
+                            stats.BytesDownloaded += kvp.Value.BytesDownloaded;
+                            stats.BytesUploaded += kvp.Value.BytesUploaded;
+                        }
+                    }
+                    foreach (var kvp in currentNetStats)
+                    {
+                        var stats = _networkStats.GetOrAdd(kvp.Key, _ => new UsageStats());
+                        lock (stats)
+                        {
+                            stats.BytesDownloaded += kvp.Value.BytesDownloaded;
+                            stats.BytesUploaded += kvp.Value.BytesUploaded;
+                        }
                     }
                 }
-                foreach (var kvp in currentNetStats)
-                {
-                    var stats = _networkStats.GetOrAdd(kvp.Key, _ => new UsageStats());
-                    lock (stats)
-                    {
-                        stats.BytesDownloaded += kvp.Value.BytesDownloaded;
-                        stats.BytesUploaded += kvp.Value.BytesUploaded;
-                    }
-                }
             }
+
+            SaveMinuteBuckets();
+        }
+
+        private Task FlushAsync()
+        {
+            FlushSyncInternal();
+            return Task.CompletedTask;
         }
 
         public async Task StopAsync(CancellationToken cancellationToken)
         {
             _cts.Cancel();
-            await FlushAsync();
+            FlushSyncInternal();
+            // Wait for background loops to finish gracefully
+            var tasks = new[] { _flushTask, _speedTask, _cleanupTask };
+            await Task.WhenAll(tasks.Where(t => t != null).Select(t => t!));
         }
 
         private static DateTime TruncateToMinute(DateTime dt)

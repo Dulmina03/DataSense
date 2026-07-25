@@ -14,7 +14,6 @@ namespace DataSense.Data
 
         public DataSenseDbContext(DbContextOptions<DataSenseDbContext> options) : base(options)
         {
-            Database.EnsureCreated();
         }
 
         public DataSenseDbContext() { }
@@ -26,13 +25,28 @@ namespace DataSense.Data
                 var appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
                 var dbPath = Path.Combine(appData, "DataSense", "datasense.db");
                 Directory.CreateDirectory(Path.GetDirectoryName(dbPath)!);
-                
+
                 optionsBuilder.UseSqlite($"Data Source={dbPath}");
             }
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            var dateTimeConverter = new Microsoft.EntityFrameworkCore.Storage.ValueConversion.ValueConverter<DateTime, string>(
+                v => v.ToString("yyyy-MM-dd HH:mm:ss"),
+                v => DateTime.Parse(v));
+
+            foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+            {
+                foreach (var property in entityType.GetProperties())
+                {
+                    if (property.ClrType == typeof(DateTime) || property.ClrType == typeof(DateTime?))
+                    {
+                        property.SetValueConverter(dateTimeConverter);
+                    }
+                }
+            }
+
             modelBuilder.Entity<ProcessUsageEntity>()
                 .HasIndex(p => new { p.ProcessName, p.Date }).IsUnique();
 
