@@ -115,6 +115,16 @@ namespace DataSense.UI
                 {
                     var dbContext = scope.ServiceProvider.GetRequiredService<DataSenseDbContext>();
                     dbContext.Database.EnsureCreated();
+                    dbContext.Database.ExecuteSqlRaw(@"
+                        CREATE TABLE IF NOT EXISTS ""NetworkUsages"" (
+                            ""Id"" INTEGER NOT NULL CONSTRAINT ""PK_NetworkUsages"" PRIMARY KEY AUTOINCREMENT,
+                            ""NetworkName"" TEXT NOT NULL,
+                            ""BytesDownloaded"" INTEGER NOT NULL,
+                            ""BytesUploaded"" INTEGER NOT NULL,
+                            ""Date"" TEXT NOT NULL
+                        );
+                        CREATE UNIQUE INDEX IF NOT EXISTS ""IX_NetworkUsages_NetworkName_Date"" ON ""NetworkUsages"" (""NetworkName"", ""Date"");
+                    ");
                     dbContext.Database.ExecuteSqlRaw("PRAGMA journal_mode=WAL;");
                     dbContext.Database.ExecuteSqlRaw("PRAGMA synchronous=NORMAL;");
                     dbContext.Database.ExecuteSqlRaw("PRAGMA busy_timeout=5000;");

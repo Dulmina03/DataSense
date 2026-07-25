@@ -144,6 +144,24 @@ namespace DataSense.UI.ViewModels
         public ObservableCollection<Axis> PeakMonthlyXAxes { get; } = new();
         public ObservableCollection<Axis> PeakMonthlyYAxes { get; } = new();
 
+        public ObservableCollection<ISeries> TodayDoughnutSeries { get; } = new()
+        {
+            new PieSeries<double> { Values = new double[] { 67 }, Name = "Steam", Fill = new SolidColorPaint(SKColor.Parse("#3B82F6")), InnerRadius = 60 },
+            new PieSeries<double> { Values = new double[] { 12 }, Name = "Chrome", Fill = new SolidColorPaint(SKColor.Parse("#06B6D4")), InnerRadius = 60 },
+            new PieSeries<double> { Values = new double[] { 5 }, Name = "OneDrive", Fill = new SolidColorPaint(SKColor.Parse("#A855F7")), InnerRadius = 60 },
+            new PieSeries<double> { Values = new double[] { 3 }, Name = "Discord", Fill = new SolidColorPaint(SKColor.Parse("#F59E0B")), InnerRadius = 60 },
+            new PieSeries<double> { Values = new double[] { 13 }, Name = "Others", Fill = new SolidColorPaint(SKColor.Parse("#6B7280")), InnerRadius = 60 }
+        };
+
+        public ObservableCollection<ISeries> MonthlyDoughnutSeries { get; } = new()
+        {
+            new PieSeries<double> { Values = new double[] { 42 }, Name = "Steam", Fill = new SolidColorPaint(SKColor.Parse("#3B82F6")), InnerRadius = 60 },
+            new PieSeries<double> { Values = new double[] { 21 }, Name = "OneDrive", Fill = new SolidColorPaint(SKColor.Parse("#A855F7")), InnerRadius = 60 },
+            new PieSeries<double> { Values = new double[] { 15 }, Name = "Chrome", Fill = new SolidColorPaint(SKColor.Parse("#06B6D4")), InnerRadius = 60 },
+            new PieSeries<double> { Values = new double[] { 11 }, Name = "Windows Update", Fill = new SolidColorPaint(SKColor.Parse("#22C55E")), InnerRadius = 60 },
+            new PieSeries<double> { Values = new double[] { 11 }, Name = "Others", Fill = new SolidColorPaint(SKColor.Parse("#6B7280")), InnerRadius = 60 }
+        };
+
         // Dark canvas backgrounds for each chart
         public DrawMarginFrame SpeedDrawMarginFrame { get; } = new DrawMarginFrame
         {

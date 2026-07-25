@@ -512,42 +512,207 @@
                             <Grid Margin="0,0,0,0">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="12"/>
+                                    <ColumnDefinition Width="16"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
 
-                                <!-- Card 1: Today -->
-                                <materialDesign:Card Grid.Column="0" Padding="16">
-                                    <Border CornerRadius="18" BorderThickness="1" BorderBrush="{StaticResource CardBorderBrush}" Background="{StaticResource MaterialDesignCardBackground}" Padding="12">
-                                        <StackPanel HorizontalAlignment="Center">
-                                            <TextBlock Text="Today" Foreground="White" FontSize="14" FontWeight="Bold" Margin="0,0,0,8"/>
-                                            <!-- Modern colorful doughnut chart -->
-                                            <lvc:PieChart Series="{Binding TodayDoughnutSeries}" Height="180" Width="180" LegendPosition="Right"/>
-                                            <TextBlock Text="42.8 GB" Foreground="White" FontSize="20" FontWeight="Bold" Margin="0,8,0,4" HorizontalAlignment="Center"/>
+                                <!-- Left Card: Today -->
+                                <materialDesign:Card Grid.Column="0" UniformCornerRadius="18" Background="#161F2F">
+                                    <Border CornerRadius="18" BorderThickness="1" BorderBrush="#2A364B" Background="#161F2F" Padding="20">
+                                        <StackPanel>
+                                            <TextBlock Text="Today" Foreground="#F8FAFC" FontSize="16" FontWeight="Bold" Margin="0,0,0,16"/>
+                                            
+                                            <!-- Large Doughnut Chart with Center Total -->
+                                            <Grid Width="200" Height="200" HorizontalAlignment="Center" Margin="0,0,0,16">
+                                                <lvc:PieChart Series="{Binding TodayDoughnutSeries}" LegendPosition="Hidden"/>
+                                                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                                    <TextBlock Text="Today's Total" FontSize="11" Foreground="#94A3B8" HorizontalAlignment="Center" FontWeight="SemiBold"/>
+                                                    <TextBlock Text="42.8 GB" FontSize="22" Foreground="#F8FAFC" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,2,0,0"/>
+                                                </StackPanel>
+                                            </Grid>
+                                            
+                                            <!-- Legend -->
                                             <StackPanel>
-                                                <TextBlock Text="Steam 67% 12.8 GB" Foreground="White"/>
-                                                <TextBlock Text="Chrome 12% 2.2 GB" Foreground="White"/>
-                                                <TextBlock Text="OneDrive 5% 1.0 GB" Foreground="White"/>
-                                                <TextBlock Text="Discord 3% 0.5 GB" Foreground="White"/>
-                                                <TextBlock Text="Others 13% 2.5 GB" Foreground="White"/>
+                                                <!-- Steam -->
+                                                <Grid Margin="0,4">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <Ellipse Width="10" Height="10" Fill="#3B82F6" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                                    <TextBlock Grid.Column="1" Text="Steam" Foreground="#F8FAFC" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                                    <Border Grid.Column="2" Background="#1E293B" CornerRadius="6" Padding="6,2" Margin="8,0">
+                                                        <TextBlock Text="67%" Foreground="#3B82F6" FontSize="12" FontWeight="Bold"/>
+                                                    </Border>
+                                                    <TextBlock Grid.Column="3" Text="12.8 GB" Foreground="#94A3B8" FontSize="13" FontWeight="Medium" VerticalAlignment="Center"/>
+                                                </Grid>
+
+                                                <!-- Chrome -->
+                                                <Grid Margin="0,4">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <Ellipse Width="10" Height="10" Fill="#06B6D4" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                                    <TextBlock Grid.Column="1" Text="Chrome" Foreground="#F8FAFC" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                                    <Border Grid.Column="2" Background="#1E293B" CornerRadius="6" Padding="6,2" Margin="8,0">
+                                                        <TextBlock Text="12%" Foreground="#06B6D4" FontSize="12" FontWeight="Bold"/>
+                                                    </Border>
+                                                    <TextBlock Grid.Column="3" Text="2.2 GB" Foreground="#94A3B8" FontSize="13" FontWeight="Medium" VerticalAlignment="Center"/>
+                                                </Grid>
+
+                                                <!-- OneDrive -->
+                                                <Grid Margin="0,4">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <Ellipse Width="10" Height="10" Fill="#A855F7" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                                    <TextBlock Grid.Column="1" Text="OneDrive" Foreground="#F8FAFC" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                                    <Border Grid.Column="2" Background="#1E293B" CornerRadius="6" Padding="6,2" Margin="8,0">
+                                                        <TextBlock Text="5%" Foreground="#A855F7" FontSize="12" FontWeight="Bold"/>
+                                                    </Border>
+                                                    <TextBlock Grid.Column="3" Text="1.0 GB" Foreground="#94A3B8" FontSize="13" FontWeight="Medium" VerticalAlignment="Center"/>
+                                                </Grid>
+
+                                                <!-- Discord -->
+                                                <Grid Margin="0,4">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <Ellipse Width="10" Height="10" Fill="#F59E0B" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                                    <TextBlock Grid.Column="1" Text="Discord" Foreground="#F8FAFC" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                                    <Border Grid.Column="2" Background="#1E293B" CornerRadius="6" Padding="6,2" Margin="8,0">
+                                                        <TextBlock Text="3%" Foreground="#F59E0B" FontSize="12" FontWeight="Bold"/>
+                                                    </Border>
+                                                    <TextBlock Grid.Column="3" Text="0.5 GB" Foreground="#94A3B8" FontSize="13" FontWeight="Medium" VerticalAlignment="Center"/>
+                                                </Grid>
+
+                                                <!-- Others -->
+                                                <Grid Margin="0,4">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <Ellipse Width="10" Height="10" Fill="#6B7280" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                                    <TextBlock Grid.Column="1" Text="Others" Foreground="#F8FAFC" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                                    <Border Grid.Column="2" Background="#1E293B" CornerRadius="6" Padding="6,2" Margin="8,0">
+                                                        <TextBlock Text="13%" Foreground="#6B7280" FontSize="12" FontWeight="Bold"/>
+                                                    </Border>
+                                                    <TextBlock Grid.Column="3" Text="2.5 GB" Foreground="#94A3B8" FontSize="13" FontWeight="Medium" VerticalAlignment="Center"/>
+                                                </Grid>
                                             </StackPanel>
                                         </StackPanel>
                                     </Border>
                                 </materialDesign:Card>
 
-                                <!-- Card 2: Monthly -->
-                                <materialDesign:Card Grid.Column="2" Padding="16">
-                                    <Border CornerRadius="18" BorderThickness="1" BorderBrush="{StaticResource CardBorderBrush}" Background="{StaticResource MaterialDesignCardBackground}" Padding="12">
-                                        <StackPanel HorizontalAlignment="Center">
-                                            <TextBlock Text="This Month" Foreground="White" FontSize="14" FontWeight="Bold" Margin="0,0,0,8"/>
-                                            <lvc:PieChart Series="{Binding MonthlyDoughnutSeries}" Height="180" Width="180" LegendPosition="Right"/>
-                                            <TextBlock Text="486.5 GB" Foreground="White" FontSize="20" FontWeight="Bold" Margin="0,8,0,4" HorizontalAlignment="Center"/>
+                                <!-- Right Card: This Month -->
+                                <materialDesign:Card Grid.Column="2" UniformCornerRadius="18" Background="#161F2F">
+                                    <Border CornerRadius="18" BorderThickness="1" BorderBrush="#2A364B" Background="#161F2F" Padding="20">
+                                        <StackPanel>
+                                            <TextBlock Text="This Month" Foreground="#F8FAFC" FontSize="16" FontWeight="Bold" Margin="0,0,0,16"/>
+                                            
+                                            <!-- Large Doughnut Chart with Center Total -->
+                                            <Grid Width="200" Height="200" HorizontalAlignment="Center" Margin="0,0,0,16">
+                                                <lvc:PieChart Series="{Binding MonthlyDoughnutSeries}" LegendPosition="Hidden"/>
+                                                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                                    <TextBlock Text="Monthly Total" FontSize="11" Foreground="#94A3B8" HorizontalAlignment="Center" FontWeight="SemiBold"/>
+                                                    <TextBlock Text="486.5 GB" FontSize="22" Foreground="#F8FAFC" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,2,0,0"/>
+                                                </StackPanel>
+                                            </Grid>
+                                            
+                                            <!-- Legend -->
                                             <StackPanel>
-                                                <TextBlock Text="Steam 42% 124.8 GB" Foreground="White"/>
-                                                <TextBlock Text="OneDrive 21% 61.5 GB" Foreground="White"/>
-                                                <TextBlock Text="Chrome 15% 45.3 GB" Foreground="White"/>
-                                                <TextBlock Text="Windows Update 11% 33.2 GB" Foreground="White"/>
-                                                <TextBlock Text="Others 11% 32.7 GB" Foreground="White"/>
+                                                <!-- Steam -->
+                                                <Grid Margin="0,4">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <Ellipse Width="10" Height="10" Fill="#3B82F6" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                                    <TextBlock Grid.Column="1" Text="Steam" Foreground="#F8FAFC" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                                    <Border Grid.Column="2" Background="#1E293B" CornerRadius="6" Padding="6,2" Margin="8,0">
+                                                        <TextBlock Text="42%" Foreground="#3B82F6" FontSize="12" FontWeight="Bold"/>
+                                                    </Border>
+                                                    <TextBlock Grid.Column="3" Text="124.8 GB" Foreground="#94A3B8" FontSize="13" FontWeight="Medium" VerticalAlignment="Center"/>
+                                                </Grid>
+
+                                                <!-- OneDrive -->
+                                                <Grid Margin="0,4">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <Ellipse Width="10" Height="10" Fill="#A855F7" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                                    <TextBlock Grid.Column="1" Text="OneDrive" Foreground="#F8FAFC" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                                    <Border Grid.Column="2" Background="#1E293B" CornerRadius="6" Padding="6,2" Margin="8,0">
+                                                        <TextBlock Text="21%" Foreground="#A855F7" FontSize="12" FontWeight="Bold"/>
+                                                    </Border>
+                                                    <TextBlock Grid.Column="3" Text="61.5 GB" Foreground="#94A3B8" FontSize="13" FontWeight="Medium" VerticalAlignment="Center"/>
+                                                </Grid>
+
+                                                <!-- Chrome -->
+                                                <Grid Margin="0,4">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <Ellipse Width="10" Height="10" Fill="#06B6D4" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                                    <TextBlock Grid.Column="1" Text="Chrome" Foreground="#F8FAFC" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                                    <Border Grid.Column="2" Background="#1E293B" CornerRadius="6" Padding="6,2" Margin="8,0">
+                                                        <TextBlock Text="15%" Foreground="#06B6D4" FontSize="12" FontWeight="Bold"/>
+                                                    </Border>
+                                                    <TextBlock Grid.Column="3" Text="45.3 GB" Foreground="#94A3B8" FontSize="13" FontWeight="Medium" VerticalAlignment="Center"/>
+                                                </Grid>
+
+                                                <!-- Windows Update -->
+                                                <Grid Margin="0,4">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <Ellipse Width="10" Height="10" Fill="#22C55E" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                                    <TextBlock Grid.Column="1" Text="Windows Update" Foreground="#F8FAFC" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                                    <Border Grid.Column="2" Background="#1E293B" CornerRadius="6" Padding="6,2" Margin="8,0">
+                                                        <TextBlock Text="11%" Foreground="#22C55E" FontSize="12" FontWeight="Bold"/>
+                                                    </Border>
+                                                    <TextBlock Grid.Column="3" Text="33.2 GB" Foreground="#94A3B8" FontSize="13" FontWeight="Medium" VerticalAlignment="Center"/>
+                                                </Grid>
+
+                                                <!-- Others -->
+                                                <Grid Margin="0,4">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <Ellipse Width="10" Height="10" Fill="#6B7280" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                                    <TextBlock Grid.Column="1" Text="Others" Foreground="#F8FAFC" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                                    <Border Grid.Column="2" Background="#1E293B" CornerRadius="6" Padding="6,2" Margin="8,0">
+                                                        <TextBlock Text="11%" Foreground="#6B7280" FontSize="12" FontWeight="Bold"/>
+                                                    </Border>
+                                                    <TextBlock Grid.Column="3" Text="32.7 GB" Foreground="#94A3B8" FontSize="13" FontWeight="Medium" VerticalAlignment="Center"/>
+                                                </Grid>
                                             </StackPanel>
                                         </StackPanel>
                                     </Border>
