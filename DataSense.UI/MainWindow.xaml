@@ -276,7 +276,7 @@
                                 </Grid.ColumnDefinitions>
 
                                 <!-- Card 1: Download -->
-                                <materialDesign:Card Grid.Column="0" CornerRadius="18" BorderThickness="1" BorderBrush="#66FFFFFF33" Background="{StaticResource MaterialDesignCardBackground}" Padding="14" Margin="0,0,6,0">
+                                <materialDesign:Card Grid.Column="0" CornerRadius="18" BorderThickness="1" BorderBrush="{StaticResource CardBorderBrush}" Background="{StaticResource MaterialDesignCardBackground}" Padding="14" Margin="0,0,6,0">
   <Grid>
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
@@ -419,7 +419,7 @@
 
                                 <!-- Left 70%: Live Network Traffic -->
                          <materialDesign:Card Grid.Column="0" Padding="16">
-    <Border CornerRadius="18" BorderThickness="1" BorderBrush="#66FFFFFF33" Background="{StaticResource MaterialDesignCardBackground}">
+    <Border CornerRadius="18" BorderThickness="1" BorderBrush="{StaticResource CardBorderBrush}" Background="{StaticResource MaterialDesignCardBackground}">
       <StackPanel>
         <TextBlock Text="Today" Foreground="White" FontSize="14" FontWeight="Bold" Margin="0,0,0,12"/>
         <!-- Doughnut Chart placeholder -->
@@ -553,7 +553,7 @@
 
                                 <!-- Card 1: Today -->
                                 <materialDesign:Card Grid.Column="0" Padding="16">
-                                     <Border CornerRadius="18" BorderThickness="1" BorderBrush="#66FFFFFF33" Background="{StaticResource MaterialDesignCardBackground}">
+                                     <Border CornerRadius="18" BorderThickness="1" BorderBrush="{StaticResource CardBorderBrush}" Background="{StaticResource MaterialDesignCardBackground}">
                                          <Border.Background>
                                              <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
                                                  <GradientStop Color="#0066FF" Offset="0"/>

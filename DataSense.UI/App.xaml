@@ -27,6 +27,13 @@
             <SolidColorBrush x:Key="SidebarSelectedBackground" Color="#171E2D"/>
             <SolidColorBrush x:Key="MainHeaderBackground" Color="#0F131D"/>
             <SolidColorBrush x:Key="CardInternalBackground" Color="#171E2D"/>
-        </ResourceDictionary>
+                    <SolidColorBrush x:Key="CardBorderBrush" Color="#2A364B"/>
+            <SolidColorBrush x:Key="AccentBlue" Color="#3B82F6"/>
+            <SolidColorBrush x:Key="AccentPurple" Color="#A855F7"/>
+            <SolidColorBrush x:Key="AccentGreen" Color="#22C55E"/>
+            <SolidColorBrush x:Key="AccentOrange" Color="#F59E0B"/>
+            <SolidColorBrush x:Key="AccentCyan" Color="#06B6D4"/>
+            <SolidColorBrush x:Key="Gray" Color="#6B7280"/>
+            </ResourceDictionary>
     </Application.Resources>
 </Application>
