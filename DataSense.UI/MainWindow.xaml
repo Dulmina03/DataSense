@@ -284,8 +284,8 @@
       <RowDefinition Height="Auto" />
       <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
-    <materialDesign:PackIcon Kind="Download" Width="24" Height="24" Foreground="#00E5FF" HorizontalAlignment="Center" />
-    <TextBlock Grid.Row="1" Text="{Binding DownloadSpeedText}" FontSize="28" FontWeight="Bold" Foreground="#00E5FF" HorizontalAlignment="Center" />
+    <materialDesign:PackIcon Kind="Download" Width="24" Height="24" Foreground="{StaticResource AccentBlue}" HorizontalAlignment="Center" />
+    <TextBlock Grid.Row="1" Text="{Binding DownloadSpeedText}" FontSize="28" FontWeight="Bold" Foreground="{StaticResource AccentBlue}" HorizontalAlignment="Center" />
     <TextBlock Grid.Row="2" Text="Total Downloaded" FontSize="12" Foreground="#A0AEC0" HorizontalAlignment="Center" Margin="0,4,0,0" />
   </Grid>
   <materialDesign:Card.Style>
@@ -337,8 +337,8 @@
                                         <RowDefinition Height="Auto" />
                                         <RowDefinition Height="Auto" />
                                       </Grid.RowDefinitions>
-                                      <materialDesign:PackIcon Kind="Upload" Width="24" Height="24" Foreground="#9C27B0" HorizontalAlignment="Center" />
-                                      <TextBlock Grid.Row="1" Text="{Binding UploadSpeedText}" FontSize="28" FontWeight="Bold" Foreground="#9C27B0" HorizontalAlignment="Center" />
+                                      <materialDesign:PackIcon Kind="Upload" Width="24" Height="24" Foreground="{StaticResource AccentPurple}" HorizontalAlignment="Center" />
+                                      <TextBlock Grid.Row="1" Text="{Binding UploadSpeedText}" FontSize="28" FontWeight="Bold" Foreground="{StaticResource AccentPurple}" HorizontalAlignment="Center" />
                                       <TextBlock Grid.Row="2" Text="Total Uploaded" FontSize="12" Foreground="#A0AEC0" HorizontalAlignment="Center" Margin="0,4,0,0" />
                                       <Border Grid.Row="3" Height="30" Margin="0,6,0,0" Background="#1A202C33" CornerRadius="4">
                                         <TextBlock Text="[Sparkline]" Foreground="#A0AEC0" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="10" />
@@ -399,10 +399,10 @@
                                         <RowDefinition Height="*" />
                                         <RowDefinition Height="Auto" />
                                       </Grid.RowDefinitions>
-                                      <materialDesign:PackIcon Kind="Network" Width="24" Height="24" Foreground="#00E5FF" HorizontalAlignment="Center" />
+                                      <materialDesign:PackIcon Kind="Network" Width="24" Height="24" Foreground="{StaticResource AccentBlue}" HorizontalAlignment="Center" />
                                       <StackPanel Grid.Row="1" Orientation="Vertical" HorizontalAlignment="Center">
-                                        <TextBlock Text="↓95 Mbps" FontSize="20" FontWeight="Bold" Foreground="#00E5FF" HorizontalAlignment="Center" />
-                                        <TextBlock Text="↑22 Mbps" FontSize="20" FontWeight="Bold" Foreground="#00E5FF" HorizontalAlignment="Center" Margin="0,4,0,0" />
+                                        <TextBlock Text="↓95 Mbps" FontSize="20" FontWeight="Bold" Foreground="{StaticResource AccentBlue}" HorizontalAlignment="Center" />
+                                        <TextBlock Text="↑22 Mbps" FontSize="20" FontWeight="Bold" Foreground="{StaticResource AccentPurple}" HorizontalAlignment="Center" Margin="0,4,0,0" />
                                       </StackPanel>
                                       <TextBlock Grid.Row="2" Text="Dialog Fiber" FontSize="12" Foreground="#A0AEC0" HorizontalAlignment="Center" Margin="0,4,0,0" />
                                     </Grid>
@@ -458,7 +458,7 @@
         </Grid>
         <Grid Margin="0,0,0,8">
             <TextBlock Text="Upload Speed" Foreground="#718096" FontSize="12"/>
-            <TextBlock Text="22 Mbps" Foreground="#00E676" FontSize="12" FontWeight="Bold" HorizontalAlignment="Right"/>
+            <TextBlock Text="22 Mbps" Foreground="{StaticResource AccentPurple}" FontSize="12" FontWeight="Bold" HorizontalAlignment="Right"/>
         </Grid>
         <Grid Margin="0,0,0,8">
             <TextBlock Text="Ping" Foreground="#718096" FontSize="12"/>
@@ -496,8 +496,8 @@
                 <GridViewColumn.CellTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Vertical" Margin="4" HorizontalAlignment="Center">
-                            <TextBlock Text="{Binding DownloadSpeedText}" Foreground="#00E5FF" FontWeight="Bold"/>
-                            <TextBlock Text="{Binding UploadSpeedText}" Foreground="#00E676" FontWeight="Bold"/>
+                            <TextBlock Text="{Binding DownloadSpeedText}" Foreground="{StaticResource AccentBlue}" FontWeight="Bold"/>
+                            <TextBlock Text="{Binding UploadSpeedText}" Foreground="{StaticResource AccentPurple}" FontWeight="Bold"/>
                         </StackPanel>
                     </DataTemplate>
                 </GridViewColumn.CellTemplate>
