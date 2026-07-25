@@ -16,7 +16,7 @@
         TextElement.FontSize="13"
         TextOptions.TextFormattingMode="Ideal" 
         TextOptions.TextRenderingMode="Auto"
-        Background="{DynamicResource MaterialDesignPaper}"
+        Background="#0B1220"
         FontFamily="{DynamicResource MaterialDesignFont}"
         WindowStartupLocation="CenterScreen">
 
@@ -253,227 +253,363 @@
                     </Style>
                 </TabControl.Resources>
 
-                <!-- TAB 0: DASHBOARD (EXACT SCREENSHOT LAYOUT) -->
+                <!-- TAB 0: DASHBOARD REDESIGN (LAYOUT ONLY) -->
                 <TabItem>
-                    <Grid Margin="20">
-                        <Grid.ColumnDefinitions>
-                            <!-- Column 0: Daily usage & App breakdown -->
-                            <ColumnDefinition Width="2*" MinWidth="200"/>
-                            <!-- Column 1: Live Bandwidth & Process lists -->
-                            <ColumnDefinition Width="3*" MinWidth="300"/>
-                        </Grid.ColumnDefinitions>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                        <StackPanel Margin="20">
 
-                        <!-- COLUMN 0 (LEFT) -->
-                        <Grid Grid.Column="0" Margin="0,0,16,0">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="*"/>
-                                <RowDefinition Height="*"/>
-                                <RowDefinition Height="*"/>
-                                <RowDefinition Height="*"/>
-                            </Grid.RowDefinitions>
+                            <!-- HEADER -->
+                            <StackPanel Margin="0,0,0,20">
+                                <TextBlock Text="DataSense" FontSize="24" FontWeight="Bold" Foreground="White"/>
+                                <TextBlock Text="Network Usage Monitor" FontSize="14" Foreground="#718096" Margin="0,2,0,0"/>
+                            </StackPanel>
 
-                            <!-- 1. Network Speed Meter Card -->
-                            <materialDesign:Card Grid.Row="0" Background="{StaticResource MaterialDesignCardBackground}" Padding="16" Margin="0,0,0,12" VerticalAlignment="Stretch">
-                                <Grid VerticalAlignment="Center">
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                    </Grid.RowDefinitions>
-                                    
-                                    <DockPanel Grid.Row="0" Margin="0,0,0,14">
-                                        <TextBlock Text="Network Speed" Foreground="#718096" FontSize="13" FontWeight="SemiBold"/>
-                                        <materialDesign:PackIcon Kind="Speedometer" Foreground="#718096" Width="16" Height="16" HorizontalAlignment="Right"/>
-                                    </DockPanel>
-                                    
-                                    <Grid Grid.Row="1">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="*"/>
-                                        </Grid.ColumnDefinitions>
-                                        
-                                        <!-- Download Speed -->
-                                        <StackPanel Grid.Column="0" Margin="0,0,8,0">
-                                            <StackPanel Orientation="Horizontal">
-                                                <materialDesign:PackIcon Kind="ArrowDown" Foreground="#00E5FF" Width="14" Height="14" VerticalAlignment="Center"/>
-                                                <TextBlock Text="Download" Foreground="#718096" FontSize="11" FontWeight="SemiBold" Margin="4,0,0,0" VerticalAlignment="Center"/>
-                                            </StackPanel>
-                                            <TextBlock Text="{Binding DownloadSpeedText}" Foreground="White" FontSize="18" FontWeight="Bold" Margin="0,6,0,6"/>
-                                            <ProgressBar Value="30" IsIndeterminate="False" Height="3" Foreground="#00E5FF" Background="#2D3748" MinHeight="3" MaxHeight="3"/>
-                                        </StackPanel>
-                                        
-                                        <!-- Upload Speed -->
-                                        <StackPanel Grid.Column="1" Margin="8,0,0,0">
-                                            <StackPanel Orientation="Horizontal">
-                                                <materialDesign:PackIcon Kind="ArrowUp" Foreground="#00E676" Width="14" Height="14" VerticalAlignment="Center"/>
-                                                <TextBlock Text="Upload" Foreground="#718096" FontSize="11" FontWeight="SemiBold" Margin="4,0,0,0" VerticalAlignment="Center"/>
-                                            </StackPanel>
-                                            <TextBlock Text="{Binding UploadSpeedText}" Foreground="White" FontSize="18" FontWeight="Bold" Margin="0,6,0,6"/>
-                                            <ProgressBar Value="15" IsIndeterminate="False" Height="3" Foreground="#00E676" Background="#2D3748" MinHeight="3" MaxHeight="3"/>
-                                        </StackPanel>
+                            <!-- ROW 1: SIX SUMMARY CARDS -->
+                            <Grid Margin="0,0,0,20">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Card 1: Download -->
+                                <materialDesign:Card Grid.Column="0" CornerRadius="18" BorderThickness="1" BorderBrush="#66FFFFFF33" Background="{StaticResource MaterialDesignCardBackground}" Padding="14" Margin="0,0,6,0">
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <materialDesign:PackIcon Kind="Download" Width="24" Height="24" Foreground="#00E5FF" HorizontalAlignment="Center" />
+    <TextBlock Grid.Row="1" Text="{Binding DownloadSpeedText}" FontSize="28" FontWeight="Bold" Foreground="#00E5FF" HorizontalAlignment="Center" />
+    <TextBlock Grid.Row="2" Text="Total Downloaded" FontSize="12" Foreground="#A0AEC0" HorizontalAlignment="Center" Margin="0,4,0,0" />
+  </Grid>
+  <materialDesign:Card.Style>
+    <Style TargetType="materialDesign:Card">
+      <Setter Property="Effect">
+        <Setter.Value>
+          <DropShadowEffect BlurRadius="5" ShadowDepth="2" Opacity="0.3" />
+        </Setter.Value>
+      </Setter>
+      <Style.Triggers>
+        <Trigger Property="IsMouseOver" Value="True">
+          <Setter Property="Effect">
+            <Setter.Value>
+              <DropShadowEffect BlurRadius="8" ShadowDepth="4" Opacity="0.5" />
+            </Setter.Value>
+          </Setter>
+          <Setter Property="RenderTransform">
+            <Setter.Value>
+              <ScaleTransform ScaleX="1.02" ScaleY="1.02" />
+            </Setter.Value>
+          </Setter>
+        </Trigger>
+      </Style.Triggers>
+    </Style>
+  </materialDesign:Card.Style>
+</materialDesign:Card>
+                                    <Grid>
+                                      <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="*" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                      </Grid.RowDefinitions>
+                                      <materialDesign:PackIcon Kind="Download" Width="24" Height="24" Foreground="#00E5FF" HorizontalAlignment="Center" />
+                                      <TextBlock Grid.Row="1" Text="{Binding DownloadSpeedText}" FontSize="28" FontWeight="Bold" Foreground="#00E5FF" HorizontalAlignment="Center" />
+                                      <TextBlock Grid.Row="2" Text="Total Downloaded" FontSize="12" Foreground="#A0AEC0" HorizontalAlignment="Center" Margin="0,4,0,0" />
+                                      <Border Grid.Row="3" Height="30" Margin="0,6,0,0" Background="#1A202C33" CornerRadius="4">
+                                        <TextBlock Text="[Sparkline]" Foreground="#A0AEC0" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="10" />
+                                      </Border>
                                     </Grid>
-                                </Grid>
+                                </materialDesign:Card>
+
+                                <!-- Card 2: Upload -->
+                                <materialDesign:Card Grid.Column="1" Background="{StaticResource MaterialDesignCardBackground}" Padding="14" Margin="6,0,6,0">
+                                    <Grid>
+                                      <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="*" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                      </Grid.RowDefinitions>
+                                      <materialDesign:PackIcon Kind="Upload" Width="24" Height="24" Foreground="#9C27B0" HorizontalAlignment="Center" />
+                                      <TextBlock Grid.Row="1" Text="{Binding UploadSpeedText}" FontSize="28" FontWeight="Bold" Foreground="#9C27B0" HorizontalAlignment="Center" />
+                                      <TextBlock Grid.Row="2" Text="Total Uploaded" FontSize="12" Foreground="#A0AEC0" HorizontalAlignment="Center" Margin="0,4,0,0" />
+                                      <Border Grid.Row="3" Height="30" Margin="0,6,0,0" Background="#1A202C33" CornerRadius="4">
+                                        <TextBlock Text="[Sparkline]" Foreground="#A0AEC0" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="10" />
+                                      </Border>
+                                    </Grid>
+                                </materialDesign:Card>
+
+                                <!-- Card 3: Today Usage -->
+                                <materialDesign:Card Grid.Column="2" Background="{StaticResource MaterialDesignCardBackground}" Padding="14" Margin="6,0,6,0">
+                                    <Grid>
+                                      <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="*" />
+                                        <RowDefinition Height="Auto" />
+                                      </Grid.RowDefinitions>
+                                      <materialDesign:PackIcon Kind="CalendarToday" Width="24" Height="24" Foreground="#FFB300" HorizontalAlignment="Center" />
+                                      <TextBlock Grid.Row="1" Text="{Binding DailyUsageText}" FontSize="28" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" />
+                                      <TextBlock Grid.Row="2" Text="Today's Traffic" FontSize="12" Foreground="#A0AEC0" HorizontalAlignment="Center" Margin="0,4,0,0" />
+                                    </Grid>
+                                </materialDesign:Card>
+
+                                <!-- Card 4: This Month -->
+                                <materialDesign:Card Grid.Column="3" Background="{StaticResource MaterialDesignCardBackground}" Padding="14" Margin="6,0,6,0">
+                                    <Grid>
+                                      <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="*" />
+                                        <RowDefinition Height="Auto" />
+                                      </Grid.RowDefinitions>
+                                      <materialDesign:PackIcon Kind="CalendarMonth" Width="24" Height="24" Foreground="#00B0FF" HorizontalAlignment="Center" />
+                                      <TextBlock Grid.Row="1" Text="{Binding MonthlyUsageText}" FontSize="28" FontWeight="Bold" Foreground="#00B0FF" HorizontalAlignment="Center" />
+                                      <TextBlock Grid.Row="2" Text="Monthly Traffic" FontSize="12" Foreground="#A0AEC0" HorizontalAlignment="Center" Margin="0,4,0,0" />
+                                    </Grid>
+                                </materialDesign:Card>
+
+                                <!-- Card 5: Active Apps -->
+                                <materialDesign:Card Grid.Column="4" Background="{StaticResource MaterialDesignCardBackground}" Padding="14" Margin="6,0,6,0">
+                                    <Grid>
+                                      <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="*" />
+                                        <RowDefinition Height="Auto" />
+                                      </Grid.RowDefinitions>
+                                      <materialDesign:PackIcon Kind="Application" Width="24" Height="24" Foreground="#FF9800" HorizontalAlignment="Center" />
+                                      <TextBlock Grid.Row="1" Text="{Binding ActiveAppsCount, FallbackValue='12'}" FontSize="28" FontWeight="Bold" Foreground="#FF9800" HorizontalAlignment="Center" />
+                                      <StackPanel Grid.Row="2" Orientation="Vertical" HorizontalAlignment="Center" Margin="0,4,0,0">
+                                        <TextBlock Text="Display" FontSize="12" Foreground="#A0AEC0" HorizontalAlignment="Center" />
+                                        <TextBlock Text="5 Using Network" FontSize="12" Foreground="#A0AEC0" HorizontalAlignment="Center" />
+                                      </StackPanel>
+                                    </Grid>
+                                </materialDesign:Card>
+
+                                <!-- Card 6: Network -->
+                                <materialDesign:Card Grid.Column="5" Background="{StaticResource MaterialDesignCardBackground}" Padding="14" Margin="6,0,0,0">
+                                    <Grid>
+                                      <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="*" />
+                                        <RowDefinition Height="Auto" />
+                                      </Grid.RowDefinitions>
+                                      <materialDesign:PackIcon Kind="Network" Width="24" Height="24" Foreground="#00E5FF" HorizontalAlignment="Center" />
+                                      <StackPanel Grid.Row="1" Orientation="Vertical" HorizontalAlignment="Center">
+                                        <TextBlock Text="↓95 Mbps" FontSize="20" FontWeight="Bold" Foreground="#00E5FF" HorizontalAlignment="Center" />
+                                        <TextBlock Text="↑22 Mbps" FontSize="20" FontWeight="Bold" Foreground="#00E5FF" HorizontalAlignment="Center" Margin="0,4,0,0" />
+                                      </StackPanel>
+                                      <TextBlock Grid.Row="2" Text="Dialog Fiber" FontSize="12" Foreground="#A0AEC0" HorizontalAlignment="Center" Margin="0,4,0,0" />
+                                    </Grid>
+                                </materialDesign:Card>
+                            </Grid>
+
+                            <!-- ROW 2: LIVE NETWORK (70%) & NETWORK OVERVIEW (30%) -->
+                            <Grid Margin="0,0,0,20">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="7*"/>
+                                    <ColumnDefinition Width="12"/>
+                                    <ColumnDefinition Width="3*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Left 70%: Live Network Traffic -->
+                         <materialDesign:Card Grid.Column="0" Padding="16">
+    <Border CornerRadius="18" BorderThickness="1" BorderBrush="#66FFFFFF33" Background="{StaticResource MaterialDesignCardBackground}">
+      <StackPanel>
+        <TextBlock Text="Today" Foreground="White" FontSize="14" FontWeight="Bold" Margin="0,0,0,12"/>
+        <!-- Doughnut Chart placeholder -->
+        <Border Height="180" Width="180" Background="#2D3748" CornerRadius="90" HorizontalAlignment="Center" Margin="0,0,0,12">
+          <TextBlock Text="[Doughnut Chart]" Foreground="#718096" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        </Border>
+        <TextBlock Text="Today's Total" Foreground="#718096" FontSize="12"/>
+        <TextBlock Text="42.8 GB" Foreground="White" FontSize="20" FontWeight="Bold" Margin="0,0,0,12"/>
+        <!-- Legend -->
+        <StackPanel>
+          <TextBlock Text="Steam 67% 12.8 GB" Foreground="White"/>
+          <TextBlock Text="Chrome 12% 2.2 GB" Foreground="White"/>
+          <TextBlock Text="OneDrive 5% 1.0 GB" Foreground="White"/>
+          <TextBlock Text="Discord 3% 0.5 GB" Foreground="White"/>
+          <TextBlock Text="Others 13% 2.5 GB" Foreground="White"/>
+        </StackPanel>
+      </StackPanel>
+    </Border>
+  </materialDesign:Card>
+
+                                <!-- Right 30%: Network Overview -->
+                             <materialDesign:Card Grid.Column="2" Background="{StaticResource MaterialDesignCardBackground}" Padding="16">
+    <StackPanel>
+        <TextBlock Text="Network Overview" Foreground="White" FontSize="14" FontWeight="Bold" Margin="0,0,0,12"/>
+        <Grid Margin="0,0,0,8">
+            <TextBlock Text="Network" Foreground="#718096" FontSize="12"/>
+            <TextBlock Text="Wi‑Fi 6" Foreground="White" FontSize="12" HorizontalAlignment="Right"/>
+        </Grid>
+        <Grid Margin="0,0,0,8">
+            <TextBlock Text="SSID" Foreground="#718096" FontSize="12"/>
+            <TextBlock Text="Dialog Fiber" Foreground="White" FontSize="12" HorizontalAlignment="Right" TextTrimming="CharacterEllipsis" MaxWidth="120"/>
+        </Grid>
+        <Grid Margin="0,0,0,8">
+            <TextBlock Text="Download Speed" Foreground="#718096" FontSize="12"/>
+            <TextBlock Text="95 Mbps" Foreground="#00E5FF" FontSize="12" FontWeight="Bold" HorizontalAlignment="Right"/>
+        </Grid>
+        <Grid Margin="0,0,0,8">
+            <TextBlock Text="Upload Speed" Foreground="#718096" FontSize="12"/>
+            <TextBlock Text="22 Mbps" Foreground="#00E676" FontSize="12" FontWeight="Bold" HorizontalAlignment="Right"/>
+        </Grid>
+        <Grid Margin="0,0,0,8">
+            <TextBlock Text="Ping" Foreground="#718096" FontSize="12"/>
+            <TextBlock Text="14 ms" Foreground="White" FontSize="12" HorizontalAlignment="Right"/>
+        </Grid>
+        <Grid Margin="0,0,0,0">
+            <TextBlock Text="Signal Strength" Foreground="#718096" FontSize="12"/>
+            <TextBlock Text="Excellent" Foreground="#00E676" FontSize="12" FontWeight="Bold" HorizontalAlignment="Right"/>
+        </Grid>
+    </StackPanel>
+</materialDesign:Card>
+                            </Grid>
+
+                            <!-- ROW 3: PROCESS NETWORK TRAFFIC -->
+                            <materialDesign:Card Background="{StaticResource MaterialDesignCardBackground}" Padding="16" Margin="0,0,0,20">
+                                <StackPanel>
+                                    <TextBlock Text="Process Network Traffic" Foreground="White" FontSize="14" FontWeight="Bold" Margin="0,0,0,12"/>
+                                    
+                            <ListView ItemsSource="{Binding TopProcesses}" MaxHeight="220">
+    <ListView.View>
+        <GridView>
+            <!-- Application column with icon and name -->
+            <GridViewColumn Header="Application">
+                <GridViewColumn.CellTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="4">
+                            <materialDesign:PackIcon Kind="Application" Width="16" Height="16" Foreground="White" Margin="0,0,4,0"/>
+                            <TextBlock Text="{Binding ProcessName}" Foreground="White" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </GridViewColumn.CellTemplate>
+            </GridViewColumn>
+            <!-- Live Speed column showing download (blue) and upload (purple) -->
+            <GridViewColumn Header="Live Speed">
+                <GridViewColumn.CellTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Vertical" Margin="4" HorizontalAlignment="Center">
+                            <TextBlock Text="{Binding DownloadSpeedText}" Foreground="#00E5FF" FontWeight="Bold"/>
+                            <TextBlock Text="{Binding UploadSpeedText}" Foreground="#00E676" FontWeight="Bold"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </GridViewColumn.CellTemplate>
+            </GridViewColumn>
+            <!-- Trend column with small sparkline placeholder -->
+            <GridViewColumn Header="Trend">
+                <GridViewColumn.CellTemplate>
+                    <DataTemplate>
+                        <Border Height="20" Width="80" Background="#2D3748" CornerRadius="3">
+                            <TextBlock Text="[spark]" Foreground="#A0AEC0" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="10"/>
+                        </Border>
+                    </DataTemplate>
+                </GridViewColumn.CellTemplate>
+            </GridViewColumn>
+        </GridView>
+    </ListView.View>
+    <!-- Styling for rows: rounded corners, hover animation, subtle highlight -->
+    <ListView.ItemContainerStyle>
+        <Style TargetType="ListViewItem">
+            <Setter Property="Margin" Value="0,2,0,2"/>
+            <Setter Property="Padding" Value="8"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListViewItem">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="8">
+                            <ContentPresenter/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#1A202C66"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#1A202C99"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </ListView.ItemContainerStyle>
+</ListView>
+                                </StackPanel>
                             </materialDesign:Card>
 
-                            <!-- 2. Daily Usage Card -->
-                            <materialDesign:Card Grid.Row="1" Background="{StaticResource MaterialDesignCardBackground}" Padding="16" Margin="0,0,0,12" VerticalAlignment="Stretch">
-                                <Grid>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="*"/>
-                                        <RowDefinition Height="Auto"/>
-                                    </Grid.RowDefinitions>
-                                    <!-- Header -->
-                                    <DockPanel Grid.Row="0">
-                                        <TextBlock Text="Daily Usage" Foreground="#718096" FontSize="13" FontWeight="SemiBold"/>
-                                    </DockPanel>
-                                    <!-- Value -->
-                                    <StackPanel Grid.Row="1" VerticalAlignment="Center">
-                                        <StackPanel Orientation="Horizontal" Margin="0,4,0,2">
-                                            <TextBlock Text="{Binding DailyUsageText}" Foreground="White" FontSize="26" FontWeight="Bold"/>
-                                            <materialDesign:PackIcon Kind="ArrowUp" Foreground="#00E676" Width="18" Height="18" VerticalAlignment="Center" Margin="6,0,0,0"/>
-                                        </StackPanel>
-                                        <!-- Trend -->
-                                        <TextBlock Text="Weekly Trend: +10%" Foreground="#00E676" FontSize="11" FontWeight="SemiBold"/>
+                            <!-- ROW 4: TOP DATA CONSUMERS (TWO EQUAL CARDS) -->
+                            <Grid Margin="0,0,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="12"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Card 1: Today -->
+                                <materialDesign:Card Grid.Column="0" Padding="16">
+                                     <Border CornerRadius="18" BorderThickness="1" BorderBrush="#66FFFFFF33" Background="{StaticResource MaterialDesignCardBackground}">
+                                         <Border.Background>
+                                             <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                                 <GradientStop Color="#0066FF" Offset="0"/>
+                                                 <GradientStop Color="#800080" Offset="1"/>
+                                             </LinearGradientBrush>
+                                         </Border.Background>
+                                         <Grid>
+                                             <Grid.RowDefinitions>
+                                                 <RowDefinition Height="Auto"/>
+                                                 <RowDefinition Height="220"/>
+                                             </Grid.RowDefinitions>
+                                             <TextBlock Grid.Row="0" Text="Live Network Traffic" Foreground="White" FontSize="14" FontWeight="Bold" Margin="0,0,0,12"/>
+                                             <lvc:CartesianChart Grid.Row="1"
+                                                 Series="{Binding SpeedSeries}"
+                                                 XAxes="{Binding SpeedXAxes}"
+                                                 YAxes="{Binding SpeedYAxes}"
+                                                 DrawMarginFrame="{Binding SpeedDrawMarginFrame}"
+                                                 LegendLocation="None"
+                                                 Hoverable="True"
+                                                 ZoomMode="X"
+                                                 GridLinesVisibility="Vertical,Horizontal"
+                                                 StrokeThickness="2"/>
+                                         </Grid>
+                                     </Border>
+                                 </materialDesign:Card>
+
+                                <!-- Card 2: Monthly -->
+                                <materialDesign:Card Grid.Column="2" Background="{StaticResource MaterialDesignCardBackground}" Padding="16">
+                                    <StackPanel Height="180">
+                        <materialDesign:Card Grid.Column="2" Padding="16">
+  <Border CornerRadius="18" BorderThickness="1" BorderBrush="#66FFFFFF33" Background="{StaticResource MaterialDesignCardBackground}">
+    <StackPanel>
+      <TextBlock Text="This Month" Foreground="White" FontSize="14" FontWeight="Bold" Margin="0,0,0,12"/>
+      <!-- Doughnut Chart placeholder -->
+      <Border Height="180" Width="180" Background="#2D3748" CornerRadius="90" HorizontalAlignment="Center" Margin="0,0,0,12">
+        <TextBlock Text="[Doughnut Chart]" Foreground="#718096" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+      </Border>
+      <TextBlock Text="Monthly Total" Foreground="#718096" FontSize="12"/>
+      <TextBlock Text="486.5 GB" Foreground="White" FontSize="20" FontWeight="Bold" Margin="0,0,0,12"/>
+      <!-- Legend -->
+      <StackPanel>
+        <TextBlock Text="Steam 42% 124.8 GB" Foreground="White"/>
+        <TextBlock Text="OneDrive 21% 61.5 GB" Foreground="White"/>
+        <TextBlock Text="Chrome 15% 45.3 GB" Foreground="White"/>
+        <TextBlock Text="Windows Update 11% 33.2 GB" Foreground="White"/>
+        <TextBlock Text="Others 11% 32.7 GB" Foreground="White"/>
+      </StackPanel>
+    </StackPanel>
+  </Border>
+</materialDesign:Card>                                        </Grid>
                                     </StackPanel>
-                                    <!-- Sparkline vector wave -->
-                                    <Path Grid.Row="2" Stroke="#00E676" StrokeThickness="1.5" Fill="Transparent" Data="M 0,20 C 30,10 60,30 90,15 C 120,5 150,25 180,10 C 200,5 210,18 220,5" VerticalAlignment="Bottom" Height="35" Stretch="Fill"/>
-                                </Grid>
-                            </materialDesign:Card>
+                                </materialDesign:Card>
+                            </Grid>
 
-                            <!-- 3. Weekly Usage Card -->
-                            <materialDesign:Card Grid.Row="2" Background="{StaticResource MaterialDesignCardBackground}" Padding="16" Margin="0,0,0,12" VerticalAlignment="Stretch">
-                                <Grid>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="*"/>
-                                        <RowDefinition Height="Auto"/>
-                                    </Grid.RowDefinitions>
-                                    <!-- Header -->
-                                    <DockPanel Grid.Row="0">
-                                        <TextBlock Text="Weekly Usage" Foreground="#718096" FontSize="13" FontWeight="SemiBold"/>
-                                    </DockPanel>
-                                    <!-- Value -->
-                                    <StackPanel Grid.Row="1" VerticalAlignment="Center">
-                                        <StackPanel Orientation="Horizontal" Margin="0,4,0,2">
-                                            <TextBlock Text="{Binding WeeklyUsageText}" Foreground="White" FontSize="26" FontWeight="Bold"/>
-                                            <materialDesign:PackIcon Kind="ArrowUp" Foreground="#FFB300" Width="18" Height="18" VerticalAlignment="Center" Margin="6,0,0,0"/>
-                                        </StackPanel>
-                                        <!-- Trend -->
-                                        <TextBlock Text="Avg. Daily: ~350 MB" Foreground="#FFB300" FontSize="11" FontWeight="SemiBold"/>
-                                    </StackPanel>
-                                    <!-- Sparkline vector wave (Gold/Amber) -->
-                                    <Path Grid.Row="2" Stroke="#FFB300" StrokeThickness="1.5" Fill="Transparent" Data="M 0,10 C 25,25 50,5 75,18 C 100,10 125,28 150,8 C 175,22 200,5 220,15" VerticalAlignment="Bottom" Height="35" Stretch="Fill"/>
-                                </Grid>
-                            </materialDesign:Card>
-
-                            <!-- 4. Monthly Usage Card -->
-                            <materialDesign:Card Grid.Row="3" Background="{StaticResource MaterialDesignCardBackground}" Padding="16" Margin="0,0,0,0" VerticalAlignment="Stretch">
-                                <Grid>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="*"/>
-                                        <RowDefinition Height="Auto"/>
-                                    </Grid.RowDefinitions>
-                                    <!-- Header -->
-                                    <DockPanel Grid.Row="0">
-                                        <TextBlock Text="Monthly Usage" Foreground="#718096" FontSize="13" FontWeight="SemiBold"/>
-                                    </DockPanel>
-                                    <!-- Value -->
-                                    <StackPanel Grid.Row="1" VerticalAlignment="Center">
-                                        <StackPanel Orientation="Horizontal" Margin="0,4,0,2">
-                                            <TextBlock Text="{Binding MonthlyUsageText}" Foreground="White" FontSize="26" FontWeight="Bold"/>
-                                            <materialDesign:PackIcon Kind="ArrowUp" Foreground="#00B0FF" Width="18" Height="18" VerticalAlignment="Center" Margin="6,0,0,0"/>
-                                        </StackPanel>
-                                        <!-- Trend -->
-                                        <TextBlock Text="Weekly Trend: +10%" Foreground="#00B0FF" FontSize="11" FontWeight="SemiBold"/>
-                                    </StackPanel>
-                                    <!-- Sparkline vector wave -->
-                                    <Path Grid.Row="2" Stroke="#00B0FF" StrokeThickness="1.5" Fill="Transparent" Data="M 0,15 C 20,5 55,25 80,10 C 115,0 135,28 170,12 C 190,5 210,18 220,10" VerticalAlignment="Bottom" Height="35" Stretch="Fill"/>
-                                </Grid>
-                            </materialDesign:Card>
-                        </Grid>
-
-                        <!-- COLUMN 1 (RIGHT) -->
-                        <Grid Grid.Column="1" Margin="0,0,4,0">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="2*" MinHeight="220"/>
-                                <RowDefinition Height="3*" MinHeight="150"/>
-                            </Grid.RowDefinitions>
-
-                            <!-- Live Bandwidth Chart Card -->
-                            <materialDesign:Card Grid.Row="0" Background="#0D1B2A" Padding="20" Margin="0,0,0,16">
-                                <Grid>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="*"/>
-                                    </Grid.RowDefinitions>
-                                    <!-- Header and Legends -->
-                                    <DockPanel Grid.Row="0" Margin="0,0,0,12">
-                                        <TextBlock Text="Live Bandwidth (Mbps)" Foreground="White" FontSize="13" FontWeight="SemiBold"/>
-                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                                            <!-- Cyan dot for Download -->
-                                            <Ellipse Width="8" Height="8" Fill="#00E5FF" VerticalAlignment="Center"/>
-                                            <TextBlock Text="Download" Foreground="#7A9BB5" FontSize="11" Margin="6,0,16,0" VerticalAlignment="Center"/>
-                                            <!-- Green dot for Upload -->
-                                            <Ellipse Width="8" Height="8" Fill="#00E676" VerticalAlignment="Center"/>
-                                            <TextBlock Text="Upload" Foreground="#7A9BB5" FontSize="11" Margin="6,0,0,0" VerticalAlignment="Center"/>
-                                        </StackPanel>
-                                    </DockPanel>
-                                    <!-- Large Live Chart -->
-                                    <lvc:CartesianChart Grid.Row="1"
-                                        Series="{Binding SpeedSeries}"
-                                        XAxes="{Binding SpeedXAxes}"
-                                        YAxes="{Binding SpeedYAxes}"
-                                        DrawMarginFrame="{Binding SpeedDrawMarginFrame}"
-                                        Background="#0D1B2A"
-                                        EasingFunction="{x:Null}"/>
-                                </Grid>
-                            </materialDesign:Card>
-
-                            <!-- Process Traffic -->
-                            <materialDesign:Card Grid.Row="1" Background="{StaticResource MaterialDesignCardBackground}" Padding="18">
-                                <Grid>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="*"/>
-                                    </Grid.RowDefinitions>
-                                    <DockPanel Grid.Row="0" Margin="0,0,0,12">
-                                        <TextBlock Text="Process Traffic Speeds" Foreground="White" FontSize="14" FontWeight="Bold"/>
-                                    </DockPanel>
-                                    <ListView Grid.Row="1" ItemsSource="{Binding TopProcesses}">
-                                        <ListView.View>
-                                            <GridView>
-                                                <GridView.ColumnHeaderContainerStyle>
-                                                    <Style TargetType="GridViewColumnHeader">
-                                                        <Setter Property="Background" Value="Transparent"/>
-                                                        <Setter Property="Foreground" Value="#718096"/>
-                                                        <Setter Property="BorderThickness" Value="0"/>
-                                                        <Setter Property="FontSize" Value="11"/>
-                                                    </Style>
-                                                </GridView.ColumnHeaderContainerStyle>
-                                                <GridViewColumn Header="Process" DisplayMemberBinding="{Binding ProcessName}" Width="160"/>
-                                                <GridViewColumn Header="Total Today" DisplayMemberBinding="{Binding TotalText}" Width="110"/>
-                                                <GridViewColumn Header="Speed" Width="170">
-                                                    <GridViewColumn.CellTemplate>
-                                                        <DataTemplate>
-                                                            <Grid Width="150">
-                                                                <Grid.ColumnDefinitions>
-                                                                    <ColumnDefinition Width="*"/>
-                                                                    <ColumnDefinition Width="Auto"/>
-                                                                </Grid.ColumnDefinitions>
-                                                                <ProgressBar Grid.Column="0" Value="{Binding SpeedProgress}" Height="4" Foreground="#00E5FF" Background="#2D3748" VerticalAlignment="Center"/>
-                                                                <TextBlock Grid.Column="1" Text="{Binding SpeedText}" Foreground="#A0AEC0" FontSize="11" Margin="8,0,0,0" VerticalAlignment="Center"/>
-                                                            </Grid>
-                                                        </DataTemplate>
-                                                    </GridViewColumn.CellTemplate>
-                                                </GridViewColumn>
-                                            </GridView>
-                                        </ListView.View>
-                                    </ListView>
-                                </Grid>
-                            </materialDesign:Card>
-                        </Grid>
-                    </Grid>
+                        </StackPanel>
+                    </ScrollViewer>
                 </TabItem>
 
                 <!-- TAB 1: HISTORY VIEW -->
