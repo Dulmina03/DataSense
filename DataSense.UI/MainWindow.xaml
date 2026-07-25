@@ -276,42 +276,7 @@
                                 </Grid.ColumnDefinitions>
 
                                 <!-- Card 1: Download -->
-                                <materialDesign:Card Grid.Column="0" CornerRadius="18" BorderThickness="1" BorderBrush="{StaticResource CardBorderBrush}" Background="{StaticResource MaterialDesignCardBackground}" Padding="14" Margin="0,0,6,0">
-  <Grid>
-    <Grid.RowDefinitions>
-      <RowDefinition Height="Auto" />
-      <RowDefinition Height="*" />
-      <RowDefinition Height="Auto" />
-      <RowDefinition Height="Auto" />
-    </Grid.RowDefinitions>
-    <materialDesign:PackIcon Kind="Download" Width="24" Height="24" Foreground="{StaticResource AccentBlue}" HorizontalAlignment="Center" />
-    <TextBlock Grid.Row="1" Text="{Binding DownloadSpeedText}" FontSize="28" FontWeight="Bold" Foreground="{StaticResource AccentBlue}" HorizontalAlignment="Center" />
-    <TextBlock Grid.Row="2" Text="Total Downloaded" FontSize="12" Foreground="#A0AEC0" HorizontalAlignment="Center" Margin="0,4,0,0" />
-  </Grid>
-  <materialDesign:Card.Style>
-    <Style TargetType="materialDesign:Card">
-      <Setter Property="Effect">
-        <Setter.Value>
-          <DropShadowEffect BlurRadius="5" ShadowDepth="2" Opacity="0.3" />
-        </Setter.Value>
-      </Setter>
-      <Style.Triggers>
-        <Trigger Property="IsMouseOver" Value="True">
-          <Setter Property="Effect">
-            <Setter.Value>
-              <DropShadowEffect BlurRadius="8" ShadowDepth="4" Opacity="0.5" />
-            </Setter.Value>
-          </Setter>
-          <Setter Property="RenderTransform">
-            <Setter.Value>
-              <ScaleTransform ScaleX="1.02" ScaleY="1.02" />
-            </Setter.Value>
-          </Setter>
-        </Trigger>
-      </Style.Triggers>
-    </Style>
-  </materialDesign:Card.Style>
-</materialDesign:Card>
+                                <materialDesign:Card Grid.Column="0" UniformCornerRadius="18" Background="{StaticResource MaterialDesignCardBackground}" Padding="14" Margin="0,0,6,0">
                                     <Grid>
                                       <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto" />
@@ -553,41 +518,39 @@
 
                                 <!-- Card 1: Today -->
                                 <materialDesign:Card Grid.Column="0" Padding="16">
-    <Border CornerRadius="18" BorderThickness="1" BorderBrush="{StaticResource CardBorderBrush}" Background="{StaticResource MaterialDesignCardBackground}">
-        <StackPanel HorizontalAlignment="Center" Padding="12">
-            <TextBlock Text="Today" Foreground="White" FontSize="14" FontWeight="Bold" Margin="0,0,0,8"/>
-            <!-- Modern colorful doughnut chart -->
-            <lvc:PieChart Series="{Binding TodayDoughnutSeries}" Height="180" Width="180" LegendPosition="Right"/>
-            <TextBlock Text="42.8 GB" Foreground="White" FontSize="20" FontWeight="Bold" Margin="0,8,0,4" HorizontalAlignment="Center"/>
-            <StackPanel>
-                <TextBlock Text="Steam 67% 12.8 GB" Foreground="White"/>
-                <TextBlock Text="Chrome 12% 2.2 GB" Foreground="White"/>
-                <TextBlock Text="OneDrive 5% 1.0 GB" Foreground="White"/>
-                <TextBlock Text="Discord 3% 0.5 GB" Foreground="White"/>
-                <TextBlock Text="Others 13% 2.5 GB" Foreground="White"/>
-            </StackPanel>
-        </StackPanel>
-    </Border>
-</materialDesign:Card>
+                                    <Border CornerRadius="18" BorderThickness="1" BorderBrush="{StaticResource CardBorderBrush}" Background="{StaticResource MaterialDesignCardBackground}" Padding="12">
+                                        <StackPanel HorizontalAlignment="Center">
+                                            <TextBlock Text="Today" Foreground="White" FontSize="14" FontWeight="Bold" Margin="0,0,0,8"/>
+                                            <!-- Modern colorful doughnut chart -->
+                                            <lvc:PieChart Series="{Binding TodayDoughnutSeries}" Height="180" Width="180" LegendPosition="Right"/>
+                                            <TextBlock Text="42.8 GB" Foreground="White" FontSize="20" FontWeight="Bold" Margin="0,8,0,4" HorizontalAlignment="Center"/>
+                                            <StackPanel>
+                                                <TextBlock Text="Steam 67% 12.8 GB" Foreground="White"/>
+                                                <TextBlock Text="Chrome 12% 2.2 GB" Foreground="White"/>
+                                                <TextBlock Text="OneDrive 5% 1.0 GB" Foreground="White"/>
+                                                <TextBlock Text="Discord 3% 0.5 GB" Foreground="White"/>
+                                                <TextBlock Text="Others 13% 2.5 GB" Foreground="White"/>
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </Border>
+                                </materialDesign:Card>
 
                                 <!-- Card 2: Monthly -->
-<materialDesign:Card Grid.Column="2" Padding="16">
-    <Border CornerRadius="18" BorderThickness="1" BorderBrush="{StaticResource CardBorderBrush}" Background="{StaticResource MaterialDesignCardBackground}">
-        <StackPanel HorizontalAlignment="Center" Padding="12">
-            <TextBlock Text="This Month" Foreground="White" FontSize="14" FontWeight="Bold" Margin="0,0,0,8"/>
-            <lvc:PieChart Series="{Binding MonthlyDoughnutSeries}" Height="180" Width="180" LegendPosition="Right"/>
-            <TextBlock Text="486.5 GB" Foreground="White" FontSize="20" FontWeight="Bold" Margin="0,8,0,4" HorizontalAlignment="Center"/>
-            <StackPanel>
-                <TextBlock Text="Steam 42% 124.8 GB" Foreground="White"/>
-                <TextBlock Text="OneDrive 21% 61.5 GB" Foreground="White"/>
-                <TextBlock Text="Chrome 15% 45.3 GB" Foreground="White"/>
-                <TextBlock Text="Windows Update 11% 33.2 GB" Foreground="White"/>
-                <TextBlock Text="Others 11% 32.7 GB" Foreground="White"/>
-            </StackPanel>
-        </StackPanel>
-    </Border>
-</materialDesign:Card>
-                                    </Grid>
+                                <materialDesign:Card Grid.Column="2" Padding="16">
+                                    <Border CornerRadius="18" BorderThickness="1" BorderBrush="{StaticResource CardBorderBrush}" Background="{StaticResource MaterialDesignCardBackground}" Padding="12">
+                                        <StackPanel HorizontalAlignment="Center">
+                                            <TextBlock Text="This Month" Foreground="White" FontSize="14" FontWeight="Bold" Margin="0,0,0,8"/>
+                                            <lvc:PieChart Series="{Binding MonthlyDoughnutSeries}" Height="180" Width="180" LegendPosition="Right"/>
+                                            <TextBlock Text="486.5 GB" Foreground="White" FontSize="20" FontWeight="Bold" Margin="0,8,0,4" HorizontalAlignment="Center"/>
+                                            <StackPanel>
+                                                <TextBlock Text="Steam 42% 124.8 GB" Foreground="White"/>
+                                                <TextBlock Text="OneDrive 21% 61.5 GB" Foreground="White"/>
+                                                <TextBlock Text="Chrome 15% 45.3 GB" Foreground="White"/>
+                                                <TextBlock Text="Windows Update 11% 33.2 GB" Foreground="White"/>
+                                                <TextBlock Text="Others 11% 32.7 GB" Foreground="White"/>
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </Border>
                                 </materialDesign:Card>
                             </Grid>
 
