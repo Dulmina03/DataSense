@@ -293,20 +293,20 @@ namespace DataSense.UI.ViewModels
             {
                 Values = new ObservableCollection<ObservableValue>(),
                 Name = "Download Speed",
-                Stroke = new SolidColorPaint(SKColors.Cyan) { StrokeThickness = 2.5f },
-                Fill = new LinearGradientPaint(new[] { new SKColor(0, 229, 255, 80), new SKColor(0, 229, 255, 0) }, new SKPoint(0.5f, 0), new SKPoint(0.5f, 1)),
+                Stroke = new SolidColorPaint(new SKColor(0, 191, 255)) { StrokeThickness = 3.0f },
+                Fill = new LinearGradientPaint(new[] { new SKColor(0, 191, 255, 70), new SKColor(0, 191, 255, 0) }, new SKPoint(0.5f, 0), new SKPoint(0.5f, 1)),
                 GeometrySize = 0,
-                LineSmoothness = 0.5
+                LineSmoothness = 0.65
             };
 
             var ulLine = new LineSeries<ObservableValue>
             {
                 Values = new ObservableCollection<ObservableValue>(),
                 Name = "Upload Speed",
-                Stroke = new SolidColorPaint(SKColors.DeepPink) { StrokeThickness = 2.5f },
-                Fill = new LinearGradientPaint(new[] { new SKColor(233, 30, 99, 80), new SKColor(233, 30, 99, 0) }, new SKPoint(0.5f, 0), new SKPoint(0.5f, 1)),
+                Stroke = new SolidColorPaint(new SKColor(156, 39, 176)) { StrokeThickness = 3.0f },
+                Fill = new LinearGradientPaint(new[] { new SKColor(156, 39, 176, 70), new SKColor(156, 39, 176, 0) }, new SKPoint(0.5f, 0), new SKPoint(0.5f, 1)),
                 GeometrySize = 0,
-                LineSmoothness = 0.5
+                LineSmoothness = 0.65
             };
 
             SpeedSeries = new ObservableCollection<ISeries> { dlLine, ulLine };

@@ -54,61 +54,40 @@ namespace DataSense.Core.Services
             _scopeFactory = scopeFactory;
             _logger = logger;
             LoadMinuteBuckets();
+            // Start the background SSID poller immediately so the first packet
+            // already has the correct network name (no cold-start race).
+            SsidMonitorService.Start();
+            SsidMonitorService.WriteNetworkAdapterDiagnostics();
         }
 
-        private static string? _cachedSsid;
-        private static DateTime _lastSsidFetch = DateTime.MinValue;
-        private static readonly object _ssidLock = new object();
+        // ── Network name resolution — delegates to SsidMonitorService ──────────
 
+        /// <summary>
+        /// Returns the active Wi-Fi SSID or null if not on Wi-Fi.
+        /// Reads from the 2-second cached value — no process spawn per call.
+        /// </summary>
         public static string? GetActiveWifiSsid()
+            => SsidMonitorService.ReadWifiSsid();
+
+        /// <summary>
+        /// Returns the real active network name: SSID, "Ethernet", etc.
+        /// Reads from the SsidMonitorService cache — always correct, always fast.
+        /// </summary>
+        public static string GetActiveNetworkName()
+            => SsidMonitorService.CurrentNetworkName;
+
+        /// <summary>Legacy helper — kept for Infrastructure references.</summary>
+        public static bool IsVirtualOrIgnoredAdapter(string name, string description)
         {
-            lock (_ssidLock)
-            {
-                if ((DateTime.Now - _lastSsidFetch).TotalSeconds < 2)
-                {
-                    return _cachedSsid;
-                }
-                _lastSsidFetch = DateTime.Now;
-            }
-
-            try
-            {
-                var psi = new System.Diagnostics.ProcessStartInfo("netsh", "wlan show interfaces")
-                {
-                    RedirectStandardOutput = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                    StandardOutputEncoding = System.Text.Encoding.UTF8
-                };
-                using var proc = System.Diagnostics.Process.Start(psi);
-                if (proc != null)
-                {
-                    string output = proc.StandardOutput.ReadToEnd();
-                    proc.WaitForExit(2000);
-                    foreach (var rawLine in output.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries))
-                    {
-                        var line = rawLine.Trim();
-                        if (line.StartsWith("SSID", StringComparison.OrdinalIgnoreCase) && 
-                           !line.StartsWith("AP BSSID", StringComparison.OrdinalIgnoreCase) &&
-                           !line.StartsWith("BSSID", StringComparison.OrdinalIgnoreCase))
-                        {
-                            int colonIdx = line.IndexOf(':');
-                            if (colonIdx >= 0 && colonIdx < line.Length - 1)
-                            {
-                                string ssid = line.Substring(colonIdx + 1).Trim();
-                                if (!string.IsNullOrEmpty(ssid))
-                                {
-                                    lock (_ssidLock) { _cachedSsid = ssid; }
-                                    return ssid;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            catch { }
-
-            lock (_ssidLock) { return _cachedSsid; }
+            string combined = ((name ?? "") + " " + (description ?? "")).ToLowerInvariant();
+            return combined.Contains("virtualbox") || combined.Contains("vmware") ||
+                   combined.Contains("hyper-v")    || combined.Contains("vethernet") ||
+                   combined.Contains("tailscale")  || combined.Contains("wireguard") ||
+                   combined.Contains("openvpn")    || combined.Contains("bluetooth") ||
+                   combined.Contains("loopback")   || combined.Contains("tap-") ||
+                   combined.Contains("wsl")         || combined.Contains("docker") ||
+                   combined.Contains("npcap")       || combined.Contains("pcap") ||
+                   combined.Contains("pseudo");
         }
 
         public void AddPacket(string processName, long bytes, bool isUpload, string networkName)
@@ -116,10 +95,9 @@ namespace DataSense.Core.Services
             if (string.IsNullOrWhiteSpace(processName))
                 processName = "System";
 
-            if (string.IsNullOrWhiteSpace(networkName) || networkName.Equals("Unknown Network", StringComparison.OrdinalIgnoreCase))
+            if (string.IsNullOrWhiteSpace(networkName) || networkName.Equals("Unknown Network", StringComparison.OrdinalIgnoreCase) || networkName.Equals("Connected Network", StringComparison.OrdinalIgnoreCase))
             {
-                var ssid = GetActiveWifiSsid();
-                networkName = !string.IsNullOrEmpty(ssid) ? ssid : "Connected Network";
+                networkName = GetActiveNetworkName();
             }
 
             if (isUpload)
@@ -196,10 +174,9 @@ namespace DataSense.Core.Services
             foreach (var kvp in _networkStats)
             {
                 string key = kvp.Key;
-                if (key.Equals("Unknown Network", StringComparison.OrdinalIgnoreCase) || string.IsNullOrWhiteSpace(key))
+                if (key.Equals("Unknown Network", StringComparison.OrdinalIgnoreCase) || key.Equals("Connected Network", StringComparison.OrdinalIgnoreCase) || string.IsNullOrWhiteSpace(key))
                 {
-                    activeSsid ??= GetActiveWifiSsid();
-                    key = !string.IsNullOrEmpty(activeSsid) ? activeSsid : "Connected Network";
+                    key = GetActiveNetworkName();
                 }
 
                 lock (kvp.Value)
@@ -404,6 +381,7 @@ namespace DataSense.Core.Services
         public async Task StopAsync(CancellationToken cancellationToken)
         {
             _cts.Cancel();
+            SsidMonitorService.Stop();
             FlushSyncInternal();
             // Wait for background loops to finish gracefully
             var tasks = new[] { _flushTask, _speedTask, _cleanupTask };

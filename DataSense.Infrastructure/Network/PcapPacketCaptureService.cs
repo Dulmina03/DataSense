@@ -40,13 +40,13 @@ namespace DataSense.Infrastructure.Network
                                   dev.Description.Contains("WLAN", StringComparison.OrdinalIgnoreCase);
                     _deviceIsWifi[id] = isWifi;
 
-                    if (adapters.TryGetValue(id, out var netName))
+                    if (adapters.TryGetValue(id, out var netName) && !string.IsNullOrWhiteSpace(netName) && !netName.Equals("Connected Network", StringComparison.OrdinalIgnoreCase))
                     {
                         _deviceNetworkNames[id] = netName;
                     }
                     else
                     {
-                        _deviceNetworkNames[id] = isWifi ? "Wi-Fi" : "Connected Network";
+                        _deviceNetworkNames[id] = DataSense.Core.Services.NetworkUsageAggregator.GetActiveNetworkName();
                     }
 
                     dev.OnPacketArrival += Device_OnPacketArrival;
@@ -92,18 +92,17 @@ namespace DataSense.Infrastructure.Network
                     string srcIpStr = ipPacket.SourceAddress.ToString();
                     bool isUpload = _localIps.Contains(srcIpStr);
 
-                    string netName = "Connected Network";
+                    string netName;
                     if (sender is ILiveDevice liveDev)
                     {
-                        if (_deviceIsWifi.TryGetValue(liveDev.Name, out bool isWifi) && isWifi)
-                        {
-                            var activeSsid = DataSense.Core.Services.NetworkUsageAggregator.GetActiveWifiSsid();
-                            netName = !string.IsNullOrEmpty(activeSsid) ? activeSsid : "Wi-Fi";
-                        }
-                        else if (_deviceNetworkNames.TryGetValue(liveDev.Name, out var name))
-                        {
-                            netName = name;
-                        }
+                        // For any adapter: always read from the 2-second cached network name.
+                        // SsidMonitorService returns the real SSID for Wi-Fi or "Ethernet" — never
+                        // "Wi-Fi", "Connected Network", or any adapter description string.
+                        netName = DataSense.Core.Services.SsidMonitorService.CurrentNetworkName;
+                    }
+                    else
+                    {
+                        netName = DataSense.Core.Services.SsidMonitorService.CurrentNetworkName;
                     }
 
                     var parsedInfo = new ParsedPacket
