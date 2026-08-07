@@ -628,99 +628,100 @@
 
                             <!-- ROW 3: PROCESS NETWORK TRAFFIC TABLE -->
                             <materialDesign:Card UniformCornerRadius="18" Background="#161F2F" Padding="20" Margin="0,0,0,20">
-                                <Border CornerRadius="18" BorderThickness="1" BorderBrush="#2A364B" Background="#161F2F" Padding="10">
+                                <Border CornerRadius="18" BorderThickness="1" BorderBrush="#2A364B" Background="#161F2F" Padding="14">
                                     <StackPanel>
                                         <TextBlock Text="Process Network Traffic" Foreground="#F8FAFC" FontSize="16" FontWeight="Bold" Margin="0,0,0,16"/>
                                         
-                                        <ListView ItemsSource="{Binding TopProcesses}" MaxHeight="260" Background="Transparent" BorderThickness="0">
-                                            <ListView.View>
-                                                <GridView>
-                                                    <!-- Column 1: Application (Icon + Name) -->
-                                                    <GridViewColumn Header="Application" Width="240">
-                                                        <GridViewColumn.CellTemplate>
-                                                            <DataTemplate>
-                                                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="4">
-                                                                    <Image Source="{Binding ProcessName, Converter={StaticResource ProcessIconConverter}}" Width="20" Height="20" Margin="0,0,8,0" RenderOptions.BitmapScalingMode="HighQuality">
-                                                                        <Image.Style>
-                                                                            <Style TargetType="Image">
-                                                                                <Style.Triggers>
-                                                                                    <Trigger Property="Source" Value="{x:Null}">
-                                                                                        <Setter Property="Visibility" Value="Collapsed"/>
-                                                                                    </Trigger>
-                                                                                </Style.Triggers>
-                                                                            </Style>
-                                                                        </Image.Style>
-                                                                    </Image>
-                                                                    <materialDesign:PackIcon Kind="Application" Width="18" Height="18" Foreground="#94A3B8" VerticalAlignment="Center" Margin="0,0,8,0">
-                                                                        <materialDesign:PackIcon.Style>
-                                                                            <Style TargetType="materialDesign:PackIcon">
+                                        <!-- Header Row with Proportional Columns (30% / 15% / 15% / 20% / 20%) -->
+                                        <Border BorderThickness="0,0,0,1" BorderBrush="#2A364B" Padding="0,0,0,10" Margin="0,0,0,6">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="3*"/>    <!-- Application 30% -->
+                                                    <ColumnDefinition Width="1.5*"/>  <!-- Download Speed 15% -->
+                                                    <ColumnDefinition Width="1.5*"/>  <!-- Upload Speed 15% -->
+                                                    <ColumnDefinition Width="2*"/>    <!-- Today's Usage 20% -->
+                                                    <ColumnDefinition Width="2*"/>    <!-- Monthly Usage 20% -->
+                                                </Grid.ColumnDefinitions>
+
+                                                <TextBlock Grid.Column="0" Text="Application" Foreground="#94A3B8" FontSize="12" FontWeight="Bold" VerticalAlignment="Center" Padding="14,0"/>
+                                                <TextBlock Grid.Column="1" Text="Download Speed" Foreground="#94A3B8" FontSize="12" FontWeight="Bold" VerticalAlignment="Center" HorizontalAlignment="Right" Padding="14,0"/>
+                                                <TextBlock Grid.Column="2" Text="Upload Speed" Foreground="#94A3B8" FontSize="12" FontWeight="Bold" VerticalAlignment="Center" HorizontalAlignment="Right" Padding="14,0"/>
+                                                <TextBlock Grid.Column="3" Text="Today's Usage" Foreground="#94A3B8" FontSize="12" FontWeight="Bold" VerticalAlignment="Center" HorizontalAlignment="Right" Padding="14,0"/>
+                                                <TextBlock Grid.Column="4" Text="Monthly Usage" Foreground="#94A3B8" FontSize="12" FontWeight="Bold" VerticalAlignment="Center" HorizontalAlignment="Right" Padding="14,0"/>
+                                            </Grid>
+                                        </Border>
+
+                                        <!-- Full-Width Process ListBox -->
+                                        <ListBox ItemsSource="{Binding TopProcesses}" MaxHeight="260" Background="Transparent" BorderThickness="0" HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                                            <ListBox.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Grid Height="44" VerticalAlignment="Center">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="3*"/>    <!-- Application 30% -->
+                                                            <ColumnDefinition Width="1.5*"/>  <!-- Download Speed 15% -->
+                                                            <ColumnDefinition Width="1.5*"/>  <!-- Upload Speed 15% -->
+                                                            <ColumnDefinition Width="2*"/>    <!-- Today's Usage 20% -->
+                                                            <ColumnDefinition Width="2*"/>    <!-- Monthly Usage 20% -->
+                                                        </Grid.ColumnDefinitions>
+
+                                                        <!-- Col 0: Application (Icon + Name with 10px spacing) -->
+                                                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="14,0">
+                                                            <Image Source="{Binding ProcessName, Converter={StaticResource ProcessIconConverter}}" Width="20" Height="20" Margin="0,0,10,0" VerticalAlignment="Center" RenderOptions.BitmapScalingMode="HighQuality">
+                                                                <Image.Style>
+                                                                    <Style TargetType="Image">
+                                                                        <Style.Triggers>
+                                                                            <Trigger Property="Source" Value="{x:Null}">
                                                                                 <Setter Property="Visibility" Value="Collapsed"/>
-                                                                                <Style.Triggers>
-                                                                                    <DataTrigger Binding="{Binding ProcessName, Converter={StaticResource ProcessIconConverter}}" Value="{x:Null}">
-                                                                                        <Setter Property="Visibility" Value="Visible"/>
-                                                                                    </DataTrigger>
-                                                                                </Style.Triggers>
-                                                                            </Style>
-                                                                        </materialDesign:PackIcon.Style>
-                                                                    </materialDesign:PackIcon>
-                                                                    <TextBlock Text="{Binding ProcessName}" Foreground="#F8FAFC" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
-                                                                </StackPanel>
-                                                            </DataTemplate>
-                                                        </GridViewColumn.CellTemplate>
-                                                    </GridViewColumn>
+                                                                            </Trigger>
+                                                                        </Style.Triggers>
+                                                                    </Style>
+                                                                </Image.Style>
+                                                            </Image>
+                                                            <materialDesign:PackIcon Kind="Application" Width="18" Height="18" Foreground="#94A3B8" VerticalAlignment="Center" Margin="0,0,10,0">
+                                                                <materialDesign:PackIcon.Style>
+                                                                    <Style TargetType="materialDesign:PackIcon">
+                                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                                        <Style.Triggers>
+                                                                            <DataTrigger Binding="{Binding ProcessName, Converter={StaticResource ProcessIconConverter}}" Value="{x:Null}">
+                                                                                <Setter Property="Visibility" Value="Visible"/>
+                                                                            </DataTrigger>
+                                                                        </Style.Triggers>
+                                                                    </Style>
+                                                                </materialDesign:PackIcon.Style>
+                                                            </materialDesign:PackIcon>
+                                                            <TextBlock Text="{Binding ProcessName}" Foreground="#F8FAFC" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                                                        </StackPanel>
 
-                                                    <!-- Column 2: Download Speed -->
-                                                    <GridViewColumn Header="Download Speed" Width="140">
-                                                        <GridViewColumn.CellTemplate>
-                                                            <DataTemplate>
-                                                                <TextBlock Text="{Binding DownloadSpeedText}" Foreground="{StaticResource AccentBlue}" FontWeight="Bold" FontSize="13" VerticalAlignment="Center" Margin="4"/>
-                                                            </DataTemplate>
-                                                        </GridViewColumn.CellTemplate>
-                                                    </GridViewColumn>
+                                                        <!-- Col 1: Download Speed -->
+                                                        <TextBlock Grid.Column="1" Text="{Binding DownloadSpeedText}" Foreground="{StaticResource AccentBlue}" FontWeight="Bold" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Padding="14,0"/>
 
-                                                    <!-- Column 3: Upload Speed -->
-                                                    <GridViewColumn Header="Upload Speed" Width="140">
-                                                        <GridViewColumn.CellTemplate>
-                                                            <DataTemplate>
-                                                                <TextBlock Text="{Binding UploadSpeedText}" Foreground="{StaticResource AccentPurple}" FontWeight="Bold" FontSize="13" VerticalAlignment="Center" Margin="4"/>
-                                                            </DataTemplate>
-                                                        </GridViewColumn.CellTemplate>
-                                                    </GridViewColumn>
+                                                        <!-- Col 2: Upload Speed -->
+                                                        <TextBlock Grid.Column="2" Text="{Binding UploadSpeedText}" Foreground="{StaticResource AccentPurple}" FontWeight="Bold" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Padding="14,0"/>
 
-                                                    <!-- Column 4: Today Usage -->
-                                                    <GridViewColumn Header="Today Usage" Width="140">
-                                                        <GridViewColumn.CellTemplate>
-                                                            <DataTemplate>
-                                                                <TextBlock Text="{Binding TodayUsageText}" Foreground="#FFB300" FontWeight="Bold" FontSize="13" VerticalAlignment="Center" Margin="4"/>
-                                                            </DataTemplate>
-                                                        </GridViewColumn.CellTemplate>
-                                                    </GridViewColumn>
+                                                        <!-- Col 3: Today Usage -->
+                                                        <TextBlock Grid.Column="3" Text="{Binding TodayUsageText}" Foreground="#FFB300" FontWeight="Bold" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Padding="14,0"/>
 
-                                                    <!-- Column 5: Monthly Usage -->
-                                                    <GridViewColumn Header="Monthly Usage" Width="140">
-                                                        <GridViewColumn.CellTemplate>
-                                                            <DataTemplate>
-                                                                <TextBlock Text="{Binding MonthlyUsageText}" Foreground="#00B0FF" FontWeight="Bold" FontSize="13" VerticalAlignment="Center" Margin="4"/>
-                                                            </DataTemplate>
-                                                        </GridViewColumn.CellTemplate>
-                                                    </GridViewColumn>
-                                                </GridView>
-                                            </ListView.View>
-                                            
-                                            <ListView.ItemContainerStyle>
-                                                <Style TargetType="ListViewItem">
+                                                        <!-- Col 4: Monthly Usage -->
+                                                        <TextBlock Grid.Column="4" Text="{Binding MonthlyUsageText}" Foreground="#00B0FF" FontWeight="Bold" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Padding="14,0"/>
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </ListBox.ItemTemplate>
+
+                                            <ListBox.ItemContainerStyle>
+                                                <Style TargetType="ListBoxItem">
                                                     <Setter Property="Margin" Value="0,2,0,2"/>
-                                                    <Setter Property="Padding" Value="6"/>
+                                                    <Setter Property="Padding" Value="0"/>
+                                                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
                                                     <Setter Property="Background" Value="Transparent"/>
                                                     <Setter Property="Template">
                                                         <Setter.Value>
-                                                            <ControlTemplate TargetType="ListViewItem">
-                                                                <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="8" Padding="4">
-                                                                    <GridViewRowPresenter Columns="{TemplateBinding GridView.ColumnCollection}"/>
+                                                            <ControlTemplate TargetType="ListBoxItem">
+                                                                <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="8" SnapsToDevicePixels="True">
+                                                                    <ContentPresenter HorizontalAlignment="Stretch"/>
                                                                 </Border>
                                                                 <ControlTemplate.Triggers>
                                                                     <Trigger Property="IsMouseOver" Value="True">
-                                                                        <Setter TargetName="border" Property="Background" Value="#1E293B"/>
+                                                                        <Setter TargetName="border" Property="Background" Value="#2A364B"/>
                                                                     </Trigger>
                                                                     <Trigger Property="IsSelected" Value="True">
                                                                         <Setter TargetName="border" Property="Background" Value="#334155"/>
@@ -730,8 +731,8 @@
                                                         </Setter.Value>
                                                     </Setter>
                                                 </Style>
-                                            </ListView.ItemContainerStyle>
-                                        </ListView>
+                                            </ListBox.ItemContainerStyle>
+                                        </ListBox>
                                     </StackPanel>
                                 </Border>
                             </materialDesign:Card>
