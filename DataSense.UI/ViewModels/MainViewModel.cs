@@ -406,11 +406,36 @@ namespace DataSense.UI.ViewModels
             // Initial load
             var _ = RefreshStatsAsync();
 
-            // Load initial connection details and refresh every 60s
+            // Load initial connection details
             RefreshConnectionDetails();
+
+            // Refresh every 60s as a fallback
             var _connTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(60) };
             _connTimer.Tick += (s, e) => RefreshConnectionDetails();
             _connTimer.Start();
+
+            // Also refresh immediately whenever the network address changes (adapter switch, IP change, WiFi handoff)
+            System.Net.NetworkInformation.NetworkChange.NetworkAddressChanged += OnNetworkChanged;
+            System.Net.NetworkInformation.NetworkChange.NetworkAvailabilityChanged += OnNetworkAvailabilityChanged;
+        }
+
+        private System.Threading.CancellationTokenSource? _networkChangeCts;
+
+        private void OnNetworkChanged(object? sender, EventArgs e)
+        {
+            // Debounce: rapid adapter events can fire multiple times — wait 1.5s before refreshing
+            _networkChangeCts?.Cancel();
+            _networkChangeCts = new System.Threading.CancellationTokenSource();
+            var token = _networkChangeCts.Token;
+            Task.Delay(1500, token).ContinueWith(t =>
+            {
+                if (!t.IsCanceled) RefreshConnectionDetails();
+            }, TaskScheduler.Default);
+        }
+
+        private void OnNetworkAvailabilityChanged(object? sender, System.Net.NetworkInformation.NetworkAvailabilityEventArgs e)
+        {
+            RefreshConnectionDetails();
         }
 
         private void RefreshConnectionDetails()
