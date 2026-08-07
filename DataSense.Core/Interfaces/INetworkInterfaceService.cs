@@ -7,5 +7,6 @@ namespace DataSense.Core.Interfaces
     {
         IEnumerable<NetworkAdapterInfo> GetAvailableAdapters();
         IEnumerable<string> GetLocalIpAddresses();
+        NetworkConnectionDetails GetConnectionDetails();
     }
 }

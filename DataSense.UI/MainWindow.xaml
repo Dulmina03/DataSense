@@ -613,34 +613,78 @@
                                     </Border>
                                 </materialDesign:Card>
 
-                                <!-- Right 30%: Network Overview -->
+                                <!-- Right 30%: Connection Details -->
                                 <materialDesign:Card Grid.Column="2" UniformCornerRadius="18" Background="#161F2F" Padding="20">
                                     <Border CornerRadius="18" BorderThickness="1" BorderBrush="#2A364B" Background="#161F2F" Padding="10">
                                         <StackPanel>
-                                            <TextBlock Text="Network Overview" Foreground="#F8FAFC" FontSize="16" FontWeight="Bold" Margin="0,0,0,16"/>
-                                            <Grid Margin="0,0,0,12">
-                                                <TextBlock Text="Adapter Name" Foreground="#94A3B8" FontSize="13"/>
-                                                <TextBlock Text="{Binding SelectedAdapter.Name, FallbackValue='Ethernet'}" Foreground="#F8FAFC" FontSize="13" FontWeight="SemiBold" HorizontalAlignment="Right" TextTrimming="CharacterEllipsis" MaxWidth="160"/>
+                                            <TextBlock Text="Connection Details" Foreground="#F8FAFC" FontSize="16" FontWeight="Bold" Margin="0,0,0,18"/>
+
+                                            <!-- Network Type -->
+                                            <Grid Margin="0,0,0,14">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <materialDesign:PackIcon Kind="Wifi" Width="16" Height="16" Foreground="#64748B" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                                <TextBlock Grid.Column="1" Text="Network Type" Foreground="#64748B" FontSize="12" VerticalAlignment="Center"/>
+                                                <TextBlock Grid.Column="2" Text="{Binding ConnNetworkType}" Foreground="#F8FAFC" FontSize="13" FontWeight="SemiBold" HorizontalAlignment="Right"/>
                                             </Grid>
-                                            <Grid Margin="0,0,0,12">
-                                                <TextBlock Text="Interface ID" Foreground="#94A3B8" FontSize="13"/>
-                                                <TextBlock Text="{Binding SelectedAdapter.Id, FallbackValue='eth0'}" Foreground="#94A3B8" FontSize="12" HorizontalAlignment="Right" TextTrimming="CharacterEllipsis" MaxWidth="160"/>
+
+                                            <Rectangle Height="1" Fill="#1E293B" Margin="0,0,0,14"/>
+
+                                            <!-- Signal Strength -->
+                                            <Grid Margin="0,0,0,14">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <materialDesign:PackIcon Kind="SignalCellular3" Width="16" Height="16" Foreground="#64748B" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                                <TextBlock Grid.Column="1" Text="Signal Strength" Foreground="#64748B" FontSize="12" VerticalAlignment="Center"/>
+                                                <TextBlock Grid.Column="2" Text="{Binding ConnSignalStrength}" Foreground="#34D399" FontSize="13" FontWeight="Bold" HorizontalAlignment="Right"/>
                                             </Grid>
-                                            <Grid Margin="0,0,0,12">
-                                                <TextBlock Text="Download Speed" Foreground="#94A3B8" FontSize="13"/>
-                                                <TextBlock Text="{Binding DownloadSpeedText}" Foreground="{StaticResource AccentBlue}" FontSize="13" FontWeight="Bold" HorizontalAlignment="Right"/>
+
+                                            <Rectangle Height="1" Fill="#1E293B" Margin="0,0,0,14"/>
+
+                                            <!-- IP Address -->
+                                            <Grid Margin="0,0,0,14">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <materialDesign:PackIcon Kind="Ip" Width="16" Height="16" Foreground="#64748B" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                                <TextBlock Grid.Column="1" Text="IP Address" Foreground="#64748B" FontSize="12" VerticalAlignment="Center"/>
+                                                <TextBlock Grid.Column="2" Text="{Binding ConnIpAddress}" Foreground="#60A5FA" FontSize="13" FontWeight="SemiBold" HorizontalAlignment="Right"/>
                                             </Grid>
-                                            <Grid Margin="0,0,0,12">
-                                                <TextBlock Text="Upload Speed" Foreground="#94A3B8" FontSize="13"/>
-                                                <TextBlock Text="{Binding UploadSpeedText}" Foreground="{StaticResource AccentPurple}" FontSize="13" FontWeight="Bold" HorizontalAlignment="Right"/>
+
+                                            <Rectangle Height="1" Fill="#1E293B" Margin="0,0,0,14"/>
+
+                                            <!-- DNS Server -->
+                                            <Grid Margin="0,0,0,14">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <materialDesign:PackIcon Kind="Dns" Width="16" Height="16" Foreground="#64748B" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                                <TextBlock Grid.Column="1" Text="DNS Server" Foreground="#64748B" FontSize="12" VerticalAlignment="Center"/>
+                                                <TextBlock Grid.Column="2" Text="{Binding ConnDnsServer}" Foreground="#F8FAFC" FontSize="13" FontWeight="SemiBold" HorizontalAlignment="Right"/>
                                             </Grid>
-                                            <Grid Margin="0,0,0,12">
-                                                <TextBlock Text="Today Total" Foreground="#94A3B8" FontSize="13"/>
-                                                <TextBlock Text="{Binding DailyUsageText}" Foreground="#FFB300" FontSize="13" FontWeight="Bold" HorizontalAlignment="Right"/>
-                                            </Grid>
-                                            <Grid Margin="0,0,0,0">
-                                                <TextBlock Text="Monthly Total" Foreground="#94A3B8" FontSize="13"/>
-                                                <TextBlock Text="{Binding MonthlyUsageText}" Foreground="#00B0FF" FontSize="13" FontWeight="Bold" HorizontalAlignment="Right"/>
+
+                                            <Rectangle Height="1" Fill="#1E293B" Margin="0,0,0,14"/>
+
+                                            <!-- Gateway -->
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <materialDesign:PackIcon Kind="Router" Width="16" Height="16" Foreground="#64748B" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                                <TextBlock Grid.Column="1" Text="Gateway" Foreground="#64748B" FontSize="12" VerticalAlignment="Center"/>
+                                                <TextBlock Grid.Column="2" Text="{Binding ConnGateway}" Foreground="#F8FAFC" FontSize="13" FontWeight="SemiBold" HorizontalAlignment="Right"/>
                                             </Grid>
                                         </StackPanel>
                                     </Border>

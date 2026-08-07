@@ -183,5 +183,82 @@ namespace DataSense.Infrastructure.Network
             }
             return ipList;
         }
+
+        public NetworkConnectionDetails GetConnectionDetails()
+        {
+            var details = new NetworkConnectionDetails();
+
+            try
+            {
+                // Find best active non-loopback interface
+                var activeInterface = NetworkInterface.GetAllNetworkInterfaces()
+                    .Where(n => n.OperationalStatus == OperationalStatus.Up &&
+                                n.NetworkInterfaceType != NetworkInterfaceType.Loopback &&
+                                n.NetworkInterfaceType != NetworkInterfaceType.Tunnel)
+                    .OrderByDescending(n => n.NetworkInterfaceType == NetworkInterfaceType.Wireless80211 ? 2 :
+                                           n.NetworkInterfaceType == NetworkInterfaceType.Ethernet ? 1 : 0)
+                    .FirstOrDefault();
+
+                if (activeInterface != null)
+                {
+                    // Network Type
+                    if (activeInterface.NetworkInterfaceType == NetworkInterfaceType.Wireless80211)
+                        details.NetworkType = "Wi-Fi";
+                    else if (activeInterface.NetworkInterfaceType == NetworkInterfaceType.Ethernet)
+                        details.NetworkType = "Ethernet";
+                    else
+                        details.NetworkType = activeInterface.NetworkInterfaceType.ToString();
+
+                    var ipProps = activeInterface.GetIPProperties();
+
+                    // IPv4 address
+                    var ipv4 = ipProps.UnicastAddresses
+                        .FirstOrDefault(a => a.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork);
+                    details.IpAddress = ipv4?.Address.ToString() ?? "—";
+
+                    // Gateway
+                    var gw = ipProps.GatewayAddresses
+                        .FirstOrDefault(g => g.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork);
+                    details.Gateway = gw?.Address.ToString() ?? "—";
+
+                    // DNS
+                    var dns = ipProps.DnsAddresses
+                        .FirstOrDefault(d => d.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork);
+                    details.DnsServer = dns?.ToString() ?? "—";
+                }
+            }
+            catch { }
+
+            // Signal Strength (Wi-Fi only via netsh)
+            try
+            {
+                var psi = new ProcessStartInfo("netsh", "wlan show interfaces")
+                {
+                    RedirectStandardOutput = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    StandardOutputEncoding = Encoding.UTF8
+                };
+                using var proc = Process.Start(psi);
+                if (proc != null)
+                {
+                    string output = proc.StandardOutput.ReadToEnd();
+                    proc.WaitForExit(2000);
+                    foreach (var rawLine in output.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries))
+                    {
+                        var line = rawLine.Trim();
+                        if (line.StartsWith("Signal", StringComparison.OrdinalIgnoreCase))
+                        {
+                            int colonIdx = line.IndexOf(':');
+                            if (colonIdx >= 0)
+                                details.SignalStrength = line.Substring(colonIdx + 1).Trim();
+                        }
+                    }
+                }
+            }
+            catch { }
+
+            return details;
+        }
     }
 }

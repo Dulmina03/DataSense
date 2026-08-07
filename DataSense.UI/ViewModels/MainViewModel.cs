@@ -55,6 +55,13 @@ namespace DataSense.UI.ViewModels
         [ObservableProperty] private bool _isNetSpeedMeterPinned;
         [ObservableProperty] private int _activeAppsCount;
 
+        // Connection Details card
+        [ObservableProperty] private string _connNetworkType = "—";
+        [ObservableProperty] private string _connSignalStrength = "—";
+        [ObservableProperty] private string _connIpAddress = "—";
+        [ObservableProperty] private string _connDnsServer = "—";
+        [ObservableProperty] private string _connGateway = "—";
+
         public string[] NetSpeedMeterAvailableColors => _netSpeedMeterService.AvailableColors;
         public double[] NetSpeedMeterAvailableFontSizes => _netSpeedMeterService.AvailableFontSizes;
 
@@ -398,6 +405,28 @@ namespace DataSense.UI.ViewModels
 
             // Initial load
             var _ = RefreshStatsAsync();
+
+            // Load initial connection details and refresh every 60s
+            RefreshConnectionDetails();
+            var _connTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(60) };
+            _connTimer.Tick += (s, e) => RefreshConnectionDetails();
+            _connTimer.Start();
+        }
+
+        private void RefreshConnectionDetails()
+        {
+            Task.Run(() =>
+            {
+                var d = _networkService.GetConnectionDetails();
+                App.Current?.Dispatcher.InvokeAsync(() =>
+                {
+                    ConnNetworkType = d.NetworkType;
+                    ConnSignalStrength = d.SignalStrength;
+                    ConnIpAddress = d.IpAddress;
+                    ConnDnsServer = d.DnsServer;
+                    ConnGateway = d.Gateway;
+                });
+            });
         }
 
         private void OnSpeedUpdated(long downloadBps, long uploadBps)
