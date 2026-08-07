@@ -148,6 +148,7 @@ namespace DataSense.UI.ViewModels
         // Adapter list
         public ObservableCollection<NetworkAdapterInfo> AvailableAdapters { get; } = new();
         [ObservableProperty] private NetworkAdapterInfo? _selectedAdapter;
+        [ObservableProperty] private string _currentNetworkName = DataSense.Core.Services.SsidMonitorService.CurrentNetworkName;
 
         // Chart collections (Speed & Peak Monthly)
         public ObservableCollection<ISeries> SpeedSeries { get; set; }
@@ -443,8 +444,14 @@ namespace DataSense.UI.ViewModels
             Task.Run(() =>
             {
                 var d = _networkService.GetConnectionDetails();
+                var realSsid = DataSense.Core.Services.SsidMonitorService.CurrentNetworkName;
                 App.Current?.Dispatcher.InvokeAsync(() =>
                 {
+                    CurrentNetworkName = string.IsNullOrEmpty(realSsid) ? "Active Network" : realSsid;
+                    if (SelectedAdapter != null)
+                    {
+                        SelectedAdapter.NetworkName = CurrentNetworkName;
+                    }
                     ConnNetworkType = d.NetworkType;
                     ConnSignalStrength = d.SignalStrength;
                     ConnIpAddress = d.IpAddress;
@@ -640,6 +647,16 @@ namespace DataSense.UI.ViewModels
         {
             try
             {
+                var activeSsid = DataSense.Core.Services.SsidMonitorService.CurrentNetworkName;
+                if (!string.IsNullOrEmpty(activeSsid))
+                {
+                    CurrentNetworkName = activeSsid;
+                    if (SelectedAdapter != null)
+                    {
+                        SelectedAdapter.NetworkName = activeSsid;
+                    }
+                }
+
                 using var scope = _scopeFactory.CreateScope();
                 var repo = scope.ServiceProvider.GetRequiredService<IUsageRepository>();
 

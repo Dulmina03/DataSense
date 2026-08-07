@@ -1636,7 +1636,7 @@
 
                                         <Grid Margin="0,4,0,10">
                                             <TextBlock Text="Network Name" Foreground="#94A3B8" FontSize="13"/>
-                                            <TextBlock Text="{Binding SelectedAdapter.NetworkName, FallbackValue='Active Network'}" Foreground="White" FontWeight="SemiBold" FontSize="13" HorizontalAlignment="Right"/>
+                                            <TextBlock Text="{Binding CurrentNetworkName, FallbackValue='Active Network'}" Foreground="White" FontWeight="SemiBold" FontSize="13" HorizontalAlignment="Right"/>
                                         </Grid>
                                         <Separator Background="#2A364A"/>
 
