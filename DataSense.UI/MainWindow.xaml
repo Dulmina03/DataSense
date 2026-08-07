@@ -737,7 +737,7 @@
                                 </Border>
                             </materialDesign:Card>
 
-                            <!-- ROW 4: TOP DATA CONSUMERS (TWO EQUAL CARDS) -->
+                            <!-- ROW 4: TOP DATA CONSUMERS (TWO EQUAL CARDS WITH SIDE-BY-SIDE CHART & LEGEND) -->
                             <Grid Margin="0,0,0,0">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -749,56 +749,77 @@
                                 <materialDesign:Card Grid.Column="0" UniformCornerRadius="18" Background="#161F2F">
                                     <Border CornerRadius="18" BorderThickness="1" BorderBrush="#2A364B" Background="#161F2F" Padding="20">
                                         <StackPanel>
-                                            <TextBlock Text="Today" Foreground="#F8FAFC" FontSize="16" FontWeight="Bold" Margin="0,0,0,16"/>
+                                            <TextBlock Text="Today" Foreground="#F8FAFC" FontSize="16" FontWeight="Bold" Margin="0,0,0,20"/>
                                             
-                                            <!-- Large Doughnut Chart with Center Total (250px) -->
-                                            <Grid Width="250" Height="250" HorizontalAlignment="Center" Margin="0,0,0,16">
-                                                <lvc:PieChart Series="{Binding TodayDoughnutSeries}" LegendPosition="Hidden" Background="Transparent"/>
-                                                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                                                    <TextBlock Text="Today's Total" FontSize="12" Foreground="#94A3B8" HorizontalAlignment="Center" FontWeight="SemiBold"/>
-                                                    <TextBlock Text="{Binding DailyUsageText}" FontSize="22" Foreground="#F8FAFC" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,4,0,0"/>
-                                                </StackPanel>
+                                            <!-- Side-by-Side Grid: Left 290px Chart, Right Legend -->
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>   <!-- Doughnut Chart -->
+                                                    <ColumnDefinition Width="24"/>     <!-- 24px Gap -->
+                                                    <ColumnDefinition Width="*"/>      <!-- Legend -->
+                                                </Grid.ColumnDefinitions>
+
+                                                <!-- Large Doughnut Chart (290px) -->
+                                                <Grid Grid.Column="0" Width="290" Height="290" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                    <lvc:PieChart Series="{Binding TodayDoughnutSeries}" LegendPosition="Hidden" Background="Transparent"/>
+                                                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                                        <TextBlock Text="Today's Total" FontSize="12" Foreground="#94A3B8" HorizontalAlignment="Center" FontWeight="SemiBold"/>
+                                                        <TextBlock Text="{Binding DailyUsageText}" FontSize="24" Foreground="#F8FAFC" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                                                    </StackPanel>
+                                                </Grid>
+
+                                                <!-- Right-Side Legend -->
+                                                <ItemsControl Grid.Column="2" ItemsSource="{Binding TodayTopProcesses}" VerticalAlignment="Center">
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <Grid Margin="0,8" VerticalAlignment="Center">
+                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width="*"/>
+                                                                    <ColumnDefinition Width="Auto"/>
+                                                                    <ColumnDefinition Width="Auto"/>
+                                                                </Grid.ColumnDefinitions>
+
+                                                                <!-- Col 0: Dot + App Icon + Name -->
+                                                                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                                                                    <Ellipse Width="10" Height="10" Fill="{Binding ProcessName, Converter={StaticResource ProcessColorConverter}}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                                                    <Image Source="{Binding ProcessName, Converter={StaticResource ProcessIconConverter}}" Width="18" Height="18" Margin="0,0,8,0" RenderOptions.BitmapScalingMode="HighQuality" VerticalAlignment="Center">
+                                                                        <Image.Style>
+                                                                            <Style TargetType="Image">
+                                                                                <Style.Triggers>
+                                                                                    <Trigger Property="Source" Value="{x:Null}">
+                                                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                                                    </Trigger>
+                                                                                </Style.Triggers>
+                                                                            </Style>
+                                                                        </Image.Style>
+                                                                    </Image>
+                                                                    <materialDesign:PackIcon Kind="Application" Width="18" Height="18" Foreground="#94A3B8" VerticalAlignment="Center" Margin="0,0,8,0">
+                                                                        <materialDesign:PackIcon.Style>
+                                                                            <Style TargetType="materialDesign:PackIcon">
+                                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                                                <Style.Triggers>
+                                                                                    <DataTrigger Binding="{Binding ProcessName, Converter={StaticResource ProcessIconConverter}}" Value="{x:Null}">
+                                                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                                                    </DataTrigger>
+                                                                                </Style.Triggers>
+                                                                            </Style>
+                                                                        </materialDesign:PackIcon.Style>
+                                                                    </materialDesign:PackIcon>
+                                                                    <TextBlock Text="{Binding ProcessName}" Foreground="#F8FAFC" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" MaxWidth="130"/>
+                                                                </StackPanel>
+
+                                                                <!-- Col 1: Percentage Badge -->
+                                                                <Border Grid.Column="1" Background="#1E293B" CornerRadius="12" Padding="10,4" Margin="14,0" VerticalAlignment="Center">
+                                                                    <TextBlock Text="{Binding PercentageText}" Foreground="#F8FAFC" FontSize="12" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                                </Border>
+
+                                                                <!-- Col 2: Total Usage -->
+                                                                <TextBlock Grid.Column="2" Text="{Binding TotalText}" Foreground="#94A3B8" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center" MinWidth="65" TextAlignment="Right"/>
+                                                            </Grid>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
                                             </Grid>
-                                            
-                                            <!-- Dynamic 3-Column Legend for Today -->
-                                            <ItemsControl ItemsSource="{Binding TodayTopProcesses}">
-                                                <ItemsControl.ItemTemplate>
-                                                    <DataTemplate>
-                                                        <Grid Margin="0,6">
-                                                            <Grid.ColumnDefinitions>
-                                                                <ColumnDefinition Width="*"/>
-                                                                <ColumnDefinition Width="Auto"/>
-                                                                <ColumnDefinition Width="Auto"/>
-                                                            </Grid.ColumnDefinitions>
-
-                                                            <!-- Col 0: Dot + App Icon + Name -->
-                                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                                                <Ellipse Width="10" Height="10" Fill="{Binding ProcessName, Converter={StaticResource ProcessColorConverter}}" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                                                                <Image Source="{Binding ProcessName, Converter={StaticResource ProcessIconConverter}}" Width="16" Height="16" Margin="0,0,6,0" RenderOptions.BitmapScalingMode="HighQuality">
-                                                                    <Image.Style>
-                                                                        <Style TargetType="Image">
-                                                                            <Style.Triggers>
-                                                                                <Trigger Property="Source" Value="{x:Null}">
-                                                                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                                                                </Trigger>
-                                                                            </Style.Triggers>
-                                                                        </Style>
-                                                                    </Image.Style>
-                                                                </Image>
-                                                                <TextBlock Text="{Binding ProcessName}" Foreground="#F8FAFC" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
-                                                            </StackPanel>
-
-                                                            <!-- Col 1: Percentage Badge -->
-                                                            <Border Grid.Column="1" Background="#1E293B" CornerRadius="6" Padding="8,3" Margin="12,0">
-                                                                <TextBlock Text="{Binding PercentageText}" Foreground="{Binding ProcessName, Converter={StaticResource ProcessColorConverter}}" FontSize="12" FontWeight="Bold"/>
-                                                            </Border>
-
-                                                            <!-- Col 2: Total Usage -->
-                                                            <TextBlock Grid.Column="2" Text="{Binding TotalText}" Foreground="#94A3B8" FontSize="13" FontWeight="Medium" VerticalAlignment="Center" MinWidth="60" TextAlignment="Right"/>
-                                                        </Grid>
-                                                    </DataTemplate>
-                                                </ItemsControl.ItemTemplate>
-                                            </ItemsControl>
                                         </StackPanel>
                                     </Border>
                                 </materialDesign:Card>
@@ -807,56 +828,77 @@
                                 <materialDesign:Card Grid.Column="2" UniformCornerRadius="18" Background="#161F2F">
                                     <Border CornerRadius="18" BorderThickness="1" BorderBrush="#2A364B" Background="#161F2F" Padding="20">
                                         <StackPanel>
-                                            <TextBlock Text="This Month" Foreground="#F8FAFC" FontSize="16" FontWeight="Bold" Margin="0,0,0,16"/>
+                                            <TextBlock Text="This Month" Foreground="#F8FAFC" FontSize="16" FontWeight="Bold" Margin="0,0,0,20"/>
                                             
-                                            <!-- Large Doughnut Chart with Center Total (250px) -->
-                                            <Grid Width="250" Height="250" HorizontalAlignment="Center" Margin="0,0,0,16">
-                                                <lvc:PieChart Series="{Binding MonthlyDoughnutSeries}" LegendPosition="Hidden" Background="Transparent"/>
-                                                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                                                    <TextBlock Text="Monthly Total" FontSize="12" Foreground="#94A3B8" HorizontalAlignment="Center" FontWeight="SemiBold"/>
-                                                    <TextBlock Text="{Binding MonthlyUsageText}" FontSize="22" Foreground="#F8FAFC" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,4,0,0"/>
-                                                </StackPanel>
+                                            <!-- Side-by-Side Grid: Left 290px Chart, Right Legend -->
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>   <!-- Doughnut Chart -->
+                                                    <ColumnDefinition Width="24"/>     <!-- 24px Gap -->
+                                                    <ColumnDefinition Width="*"/>      <!-- Legend -->
+                                                </Grid.ColumnDefinitions>
+
+                                                <!-- Large Doughnut Chart (290px) -->
+                                                <Grid Grid.Column="0" Width="290" Height="290" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                    <lvc:PieChart Series="{Binding MonthlyDoughnutSeries}" LegendPosition="Hidden" Background="Transparent"/>
+                                                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                                        <TextBlock Text="Monthly Total" FontSize="12" Foreground="#94A3B8" HorizontalAlignment="Center" FontWeight="SemiBold"/>
+                                                        <TextBlock Text="{Binding MonthlyUsageText}" FontSize="24" Foreground="#F8FAFC" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                                                    </StackPanel>
+                                                </Grid>
+
+                                                <!-- Right-Side Legend -->
+                                                <ItemsControl Grid.Column="2" ItemsSource="{Binding MonthlyTopProcesses}" VerticalAlignment="Center">
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <Grid Margin="0,8" VerticalAlignment="Center">
+                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width="*"/>
+                                                                    <ColumnDefinition Width="Auto"/>
+                                                                    <ColumnDefinition Width="Auto"/>
+                                                                </Grid.ColumnDefinitions>
+
+                                                                <!-- Col 0: Dot + App Icon + Name -->
+                                                                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                                                                    <Ellipse Width="10" Height="10" Fill="{Binding ProcessName, Converter={StaticResource ProcessColorConverter}}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                                                    <Image Source="{Binding ProcessName, Converter={StaticResource ProcessIconConverter}}" Width="18" Height="18" Margin="0,0,8,0" RenderOptions.BitmapScalingMode="HighQuality" VerticalAlignment="Center">
+                                                                        <Image.Style>
+                                                                            <Style TargetType="Image">
+                                                                                <Style.Triggers>
+                                                                                    <Trigger Property="Source" Value="{x:Null}">
+                                                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                                                    </Trigger>
+                                                                                </Style.Triggers>
+                                                                            </Style>
+                                                                        </Image.Style>
+                                                                    </Image>
+                                                                    <materialDesign:PackIcon Kind="Application" Width="18" Height="18" Foreground="#94A3B8" VerticalAlignment="Center" Margin="0,0,8,0">
+                                                                        <materialDesign:PackIcon.Style>
+                                                                            <Style TargetType="materialDesign:PackIcon">
+                                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                                                <Style.Triggers>
+                                                                                    <DataTrigger Binding="{Binding ProcessName, Converter={StaticResource ProcessIconConverter}}" Value="{x:Null}">
+                                                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                                                    </DataTrigger>
+                                                                                </Style.Triggers>
+                                                                            </Style>
+                                                                        </materialDesign:PackIcon.Style>
+                                                                    </materialDesign:PackIcon>
+                                                                    <TextBlock Text="{Binding ProcessName}" Foreground="#F8FAFC" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" MaxWidth="130"/>
+                                                                </StackPanel>
+
+                                                                <!-- Col 1: Percentage Badge -->
+                                                                <Border Grid.Column="1" Background="#1E293B" CornerRadius="12" Padding="10,4" Margin="14,0" VerticalAlignment="Center">
+                                                                    <TextBlock Text="{Binding PercentageText}" Foreground="#F8FAFC" FontSize="12" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                                </Border>
+
+                                                                <!-- Col 2: Total Usage -->
+                                                                <TextBlock Grid.Column="2" Text="{Binding TotalText}" Foreground="#94A3B8" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center" MinWidth="65" TextAlignment="Right"/>
+                                                            </Grid>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
                                             </Grid>
-                                            
-                                            <!-- Dynamic 3-Column Legend for This Month -->
-                                            <ItemsControl ItemsSource="{Binding MonthlyTopProcesses}">
-                                                <ItemsControl.ItemTemplate>
-                                                    <DataTemplate>
-                                                        <Grid Margin="0,6">
-                                                            <Grid.ColumnDefinitions>
-                                                                <ColumnDefinition Width="*"/>
-                                                                <ColumnDefinition Width="Auto"/>
-                                                                <ColumnDefinition Width="Auto"/>
-                                                            </Grid.ColumnDefinitions>
-
-                                                            <!-- Col 0: Dot + App Icon + Name -->
-                                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                                                <Ellipse Width="10" Height="10" Fill="{Binding ProcessName, Converter={StaticResource ProcessColorConverter}}" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                                                                <Image Source="{Binding ProcessName, Converter={StaticResource ProcessIconConverter}}" Width="16" Height="16" Margin="0,0,6,0" RenderOptions.BitmapScalingMode="HighQuality">
-                                                                    <Image.Style>
-                                                                        <Style TargetType="Image">
-                                                                            <Style.Triggers>
-                                                                                <Trigger Property="Source" Value="{x:Null}">
-                                                                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                                                                </Trigger>
-                                                                            </Style.Triggers>
-                                                                        </Style>
-                                                                    </Image.Style>
-                                                                </Image>
-                                                                <TextBlock Text="{Binding ProcessName}" Foreground="#F8FAFC" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
-                                                            </StackPanel>
-
-                                                            <!-- Col 1: Percentage Badge -->
-                                                            <Border Grid.Column="1" Background="#1E293B" CornerRadius="6" Padding="8,3" Margin="12,0">
-                                                                <TextBlock Text="{Binding PercentageText}" Foreground="{Binding ProcessName, Converter={StaticResource ProcessColorConverter}}" FontSize="12" FontWeight="Bold"/>
-                                                            </Border>
-
-                                                            <!-- Col 2: Total Usage -->
-                                                            <TextBlock Grid.Column="2" Text="{Binding TotalText}" Foreground="#94A3B8" FontSize="13" FontWeight="Medium" VerticalAlignment="Center" MinWidth="60" TextAlignment="Right"/>
-                                                        </Grid>
-                                                    </DataTemplate>
-                                                </ItemsControl.ItemTemplate>
-                                            </ItemsControl>
                                         </StackPanel>
                                     </Border>
                                 </materialDesign:Card>
