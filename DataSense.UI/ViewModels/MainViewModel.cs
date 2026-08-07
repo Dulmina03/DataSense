@@ -530,7 +530,8 @@ namespace DataSense.UI.ViewModels
                         Values = new[] { (double)totalBytes },
                         Name = item.Key,
                         InnerRadius = 35,
-                        Fill = new SolidColorPaint(skColor)
+                        Fill = new SolidColorPaint(skColor),
+                        ToolTipLabelFormatter = (point) => FormatBytes((long)point.Model)
                     });
                 }
             }
@@ -574,7 +575,8 @@ namespace DataSense.UI.ViewModels
                         Values = new[] { (double)totalBytes },
                         Name = p.ProcessName,
                         InnerRadius = 35,
-                        Fill = new SolidColorPaint(skColor)
+                        Fill = new SolidColorPaint(skColor),
+                        ToolTipLabelFormatter = (point) => FormatBytes((long)point.Model)
                     });
                 }
             }

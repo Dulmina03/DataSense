@@ -829,13 +829,15 @@
                                                                     <TextBlock Text="{Binding ProcessName}" Foreground="#F8FAFC" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" MaxWidth="130"/>
                                                                 </StackPanel>
 
-                                                                <!-- Col 1: Percentage Badge -->
-                                                                <Border Grid.Column="1" Background="#1E293B" CornerRadius="12" Padding="10,4" Margin="14,0" VerticalAlignment="Center">
+                                                                <!-- Col 1: Percentage Badge (Hidden on compact screens) -->
+                                                                <Border Grid.Column="1" Background="#1E293B" CornerRadius="12" Padding="10,4" Margin="14,0" VerticalAlignment="Center"
+                                                                        Visibility="{Binding DataContext.IsSidebarCollapsed, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource InverseBoolToVisibilityConverter}}">
                                                                     <TextBlock Text="{Binding PercentageText}" Foreground="#F8FAFC" FontSize="12" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                                                 </Border>
 
-                                                                <!-- Col 2: Total Usage -->
-                                                                <TextBlock Grid.Column="2" Text="{Binding TotalText}" Foreground="#94A3B8" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center" MinWidth="65" TextAlignment="Right"/>
+                                                                <!-- Col 2: Total Usage (Hidden on compact screens) -->
+                                                                <TextBlock Grid.Column="2" Text="{Binding TotalText}" Foreground="#94A3B8" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center" MinWidth="65" TextAlignment="Right"
+                                                                           Visibility="{Binding DataContext.IsSidebarCollapsed, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource InverseBoolToVisibilityConverter}}"/>
                                                             </Grid>
                                                         </DataTemplate>
                                                     </ItemsControl.ItemTemplate>
@@ -908,13 +910,15 @@
                                                                     <TextBlock Text="{Binding ProcessName}" Foreground="#F8FAFC" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" MaxWidth="130"/>
                                                                 </StackPanel>
 
-                                                                <!-- Col 1: Percentage Badge -->
-                                                                <Border Grid.Column="1" Background="#1E293B" CornerRadius="12" Padding="10,4" Margin="14,0" VerticalAlignment="Center">
+                                                                <!-- Col 1: Percentage Badge (Hidden on compact screens) -->
+                                                                <Border Grid.Column="1" Background="#1E293B" CornerRadius="12" Padding="10,4" Margin="14,0" VerticalAlignment="Center"
+                                                                        Visibility="{Binding DataContext.IsSidebarCollapsed, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource InverseBoolToVisibilityConverter}}">
                                                                     <TextBlock Text="{Binding PercentageText}" Foreground="#F8FAFC" FontSize="12" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                                                 </Border>
 
-                                                                <!-- Col 2: Total Usage -->
-                                                                <TextBlock Grid.Column="2" Text="{Binding TotalText}" Foreground="#94A3B8" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center" MinWidth="65" TextAlignment="Right"/>
+                                                                <!-- Col 2: Total Usage (Hidden on compact screens) -->
+                                                                <TextBlock Grid.Column="2" Text="{Binding TotalText}" Foreground="#94A3B8" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center" MinWidth="65" TextAlignment="Right"
+                                                                           Visibility="{Binding DataContext.IsSidebarCollapsed, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource InverseBoolToVisibilityConverter}}"/>
                                                             </Grid>
                                                         </DataTemplate>
                                                     </ItemsControl.ItemTemplate>
