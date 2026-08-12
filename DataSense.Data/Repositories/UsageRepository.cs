@@ -102,10 +102,9 @@ namespace DataSense.Data.Repositories
             foreach (var item in rawGroups)
             {
                 string name = item.NetworkName;
-                if (name.Equals("Unknown Network", StringComparison.OrdinalIgnoreCase) || string.IsNullOrWhiteSpace(name))
+                if (name.Equals("Unknown Network", StringComparison.OrdinalIgnoreCase) || name.Equals("Connected Network", StringComparison.OrdinalIgnoreCase) || string.IsNullOrWhiteSpace(name))
                 {
-                    activeSsid ??= DataSense.Core.Services.NetworkUsageAggregator.GetActiveWifiSsid();
-                    name = !string.IsNullOrEmpty(activeSsid) ? activeSsid : "Connected Network";
+                    name = DataSense.Core.Services.NetworkUsageAggregator.GetActiveNetworkName();
                 }
 
                 if (aggregated.TryGetValue(name, out var current))

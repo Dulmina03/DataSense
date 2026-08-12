@@ -14,12 +14,14 @@ AppPublisher={#MyAppPublisher}
 DefaultDirName={autopf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
 AllowNoIcons=yes
-OutputDir=output
+OutputDir=..\..\installer\output
 OutputBaseFilename=DataSenseSetup
 SetupIconFile=..\DataSense.UI\datasense_icon.ico
 Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern
+DisableDirPage=no
+UsePreviousAppDir=no
 PrivilegesRequired=admin
 ArchitecturesInstallIn64BitMode=x64compatible
 

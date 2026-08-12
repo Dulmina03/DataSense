@@ -22,6 +22,25 @@ namespace DataSense.UI
             {
                 Dispatcher.InvokeAsync(() => _trayService.ShowBalloonTip(title, msg));
             };
+
+            // Responsive window resizing handler
+            SizeChanged += OnWindowSizeChanged;
+        }
+
+        private void OnWindowSizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            if (DataContext is MainViewModel vm)
+            {
+                // Auto-collapse sidebar when window width is constrained (< 1150px)
+                if (e.NewSize.Width < 1150 && !vm.IsSidebarCollapsed)
+                {
+                    vm.IsSidebarCollapsed = true;
+                }
+                else if (e.NewSize.Width >= 1280 && vm.IsSidebarCollapsed)
+                {
+                    vm.IsSidebarCollapsed = false;
+                }
+            }
         }
 
         protected override void OnStateChanged(System.EventArgs e)

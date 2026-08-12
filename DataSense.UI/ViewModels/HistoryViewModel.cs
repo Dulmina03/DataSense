@@ -45,8 +45,8 @@ namespace DataSense.UI.ViewModels
         // Dark canvas background for history chart
         public DrawMarginFrame HistoryDrawMarginFrame { get; } = new DrawMarginFrame
         {
-            Fill = new SolidColorPaint(new SKColor(13, 27, 42)),
-            Stroke = new SolidColorPaint(new SKColor(40, 52, 68)) { StrokeThickness = 1 }
+            Fill = new SolidColorPaint(SKColors.Transparent),
+            Stroke = new SolidColorPaint(new SKColor(42, 54, 74)) { StrokeThickness = 1 }
         };
 
         public int[] YearOptions { get; } = Enumerable.Range(DateTime.Now.Year - 3, 4).Reverse().ToArray();
@@ -163,7 +163,7 @@ namespace DataSense.UI.ViewModels
             }
 
             var gradientPaint = new LinearGradientPaint(
-                new[] { new SKColor(52, 211, 153), new SKColor(99, 102, 241) },
+                new[] { new SKColor(6, 182, 212), new SKColor(59, 130, 246) }, // Cyan -> Blue gradient
                 new SKPoint(0.5f, 0f),
                 new SKPoint(0.5f, 1f)
             );
@@ -173,28 +173,28 @@ namespace DataSense.UI.ViewModels
                 Values = totalValues,
                 Name = "Total Usage (GB)",
                 Fill = gradientPaint,
-                Rx = 4,
-                Ry = 4,
-                MaxBarWidth = 18,
-                Padding = 2
+                Rx = 6,
+                Ry = 6,
+                MaxBarWidth = 24,
+                Padding = 3
             });
 
             XAxes.Add(new Axis
             {
                 Labels = labels,
-                LabelsPaint = new SolidColorPaint(new SKColor(160, 174, 192)),
-                SeparatorsPaint = new SolidColorPaint(new SKColor(45, 55, 72)) { StrokeThickness = 1 },
-                TextSize = 9,
+                LabelsPaint = new SolidColorPaint(new SKColor(148, 163, 184)),
+                SeparatorsPaint = new SolidColorPaint(new SKColor(42, 54, 74)) { StrokeThickness = 1 },
+                TextSize = 11,
                 MinStep = 1,
                 ForceStepToMin = true
             });
 
             YAxes.Add(new Axis
             {
-                LabelsPaint = new SolidColorPaint(new SKColor(160, 174, 192)),
-                SeparatorsPaint = new SolidColorPaint(new SKColor(45, 55, 72)) { StrokeThickness = 1 },
+                LabelsPaint = new SolidColorPaint(new SKColor(148, 163, 184)),
+                SeparatorsPaint = new SolidColorPaint(new SKColor(42, 54, 74)) { StrokeThickness = 1 },
                 Labeler = value => value < 1 ? $"{value:F2} " : $"{value:F1} ",
-                TextSize = 9,
+                TextSize = 11,
                 MinLimit = 0
             });
 

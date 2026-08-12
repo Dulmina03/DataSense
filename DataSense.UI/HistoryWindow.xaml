@@ -3,123 +3,314 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
-        Title="DataSense — Usage History" Height="720" Width="1120"
-        TextElement.Foreground="{DynamicResource MaterialDesignBody}"
-        Background="{DynamicResource MaterialDesignPaper}"
+        xmlns:converters="clr-namespace:DataSense.UI.Converters"
+        Title="DataSense — Usage History &amp; Reports" Height="840" Width="1280"
+        TextElement.Foreground="White"
+        Background="#0F172A"
         FontFamily="{DynamicResource MaterialDesignFont}"
         WindowStartupLocation="CenterOwner">
 
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
+    <Window.Resources>
+        <converters:ProcessIconConverter x:Key="ProcessIconConverter"/>
 
-        <!-- Header Bar -->
-        <materialDesign:ColorZone Mode="PrimaryMid" Padding="16" Grid.Row="0">
-            <DockPanel>
-                <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
-                    <materialDesign:PackIcon Kind="History" Width="24" Height="24" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                    <TextBlock Text="Usage History &amp; Reports" VerticalAlignment="Center" FontSize="20" FontWeight="Bold"/>
-                </StackPanel>
-                <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" HorizontalAlignment="Right">
-                    <Button Style="{StaticResource MaterialDesignOutlinedButton}" Margin="0,0,8,0"
-                            Command="{Binding ExportToCsvCommand}" Foreground="White" BorderBrush="White"
-                            ToolTip="Export to CSV">
-                        <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon Kind="FileDelimited" Margin="0,0,6,0"/>
-                            <TextBlock Text="Export CSV"/>
-                        </StackPanel>
-                    </Button>
-                    <Button Style="{StaticResource MaterialDesignOutlinedButton}"
-                            Command="{Binding ExportToPdfCommand}" Foreground="White" BorderBrush="White"
-                            ToolTip="Export to PDF">
-                        <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon Kind="FilePdf" Margin="0,0,6,0"/>
-                            <TextBlock Text="Export PDF"/>
-                        </StackPanel>
-                    </Button>
-                </StackPanel>
-            </DockPanel>
-        </materialDesign:ColorZone>
+        <!-- Premium History Card Style -->
+        <Style x:Key="HistoryCardStyle" TargetType="materialDesign:Card">
+            <Setter Property="UniformCornerRadius" Value="18"/>
+            <Setter Property="Background" Value="#1B2433"/>
+            <Setter Property="BorderBrush" Value="#2A364A"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+            <Setter Property="RenderTransform">
+                <Setter.Value>
+                    <ScaleTransform ScaleX="1" ScaleY="1"/>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Trigger.EnterActions>
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation Storyboard.TargetProperty="RenderTransform.ScaleX" To="1.01" Duration="0:0:0.15">
+                                    <DoubleAnimation.EasingFunction><CubicEase EasingMode="EaseOut"/></DoubleAnimation.EasingFunction>
+                                </DoubleAnimation>
+                                <DoubleAnimation Storyboard.TargetProperty="RenderTransform.ScaleY" To="1.01" Duration="0:0:0.15">
+                                    <DoubleAnimation.EasingFunction><CubicEase EasingMode="EaseOut"/></DoubleAnimation.EasingFunction>
+                                </DoubleAnimation>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </Trigger.EnterActions>
+                    <Trigger.ExitActions>
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation Storyboard.TargetProperty="RenderTransform.ScaleX" To="1" Duration="0:0:0.15">
+                                    <DoubleAnimation.EasingFunction><CubicEase EasingMode="EaseOut"/></DoubleAnimation.EasingFunction>
+                                </DoubleAnimation>
+                                <DoubleAnimation Storyboard.TargetProperty="RenderTransform.ScaleY" To="1" Duration="0:0:0.15">
+                                    <DoubleAnimation.EasingFunction><CubicEase EasingMode="EaseOut"/></DoubleAnimation.EasingFunction>
+                                </DoubleAnimation>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </Trigger.ExitActions>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
 
-        <!-- Filters Row -->
-        <materialDesign:Card Grid.Row="1" Margin="16,16,16,0" Padding="16">
-            <DockPanel>
-                <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
-                    <TextBlock Text="Year:" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                    <ComboBox ItemsSource="{Binding YearOptions}"
-                              SelectedItem="{Binding SelectedYear}"
-                              Width="80" Margin="0,0,16,0"/>
-                    <TextBlock Text="Month:" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                    <ComboBox ItemsSource="{Binding MonthOptions}"
-                              SelectedIndex="{Binding SelectedMonthIndex}"
-                              Width="120" Margin="0,0,16,0"/>
-                    <Button Style="{StaticResource MaterialDesignRaisedButton}"
-                            Command="{Binding LoadCommand}"
-                            Content="Load" Width="80"/>
-                </StackPanel>
-                <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" HorizontalAlignment="Right">
-                    <materialDesign:Chip Margin="4,0">
-                        <TextBlock Text="{Binding MonthlyDownloaded, StringFormat='↓ {0}'}"/>
-                    </materialDesign:Chip>
-                    <materialDesign:Chip Margin="4,0">
-                        <TextBlock Text="{Binding MonthlyUploaded, StringFormat='↑ {0}'}"/>
-                    </materialDesign:Chip>
-                    <materialDesign:Chip Margin="4,0">
-                        <TextBlock Text="{Binding MonthlyTotal, StringFormat='Total: {0}'}"/>
-                    </materialDesign:Chip>
-                </StackPanel>
-            </DockPanel>
-        </materialDesign:Card>
+        <!-- Modern GridView Header Style -->
+        <Style x:Key="ModernGridViewHeaderStyle" TargetType="{x:Type GridViewColumnHeader}">
+            <Setter Property="Background" Value="#16202E"/>
+            <Setter Property="Foreground" Value="#94A3B8"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="Height" Value="36"/>
+            <Setter Property="Padding" Value="12,0"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="BorderBrush" Value="#2A364A"/>
+            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type GridViewColumnHeader}">
+                        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
 
-        <!-- Content Area -->
-        <Grid Grid.Row="2" Margin="16">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="300"/>
-            </Grid.ColumnDefinitions>
+        <!-- Modern ListView Style -->
+        <Style x:Key="ModernListViewStyle" TargetType="{x:Type ListView}">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/>
+            <Setter Property="ItemContainerStyle">
+                <Setter.Value>
+                    <Style TargetType="{x:Type ListViewItem}">
+                        <Setter Property="Height" Value="40"/>
+                        <Setter Property="Margin" Value="0,1,0,1"/>
+                        <Setter Property="Background" Value="#151E2B"/>
+                        <Setter Property="Foreground" Value="White"/>
+                        <Setter Property="Padding" Value="8,0"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="{x:Type ListViewItem}">
+                                    <Border x:Name="Bd" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="true">
+                                        <GridViewRowPresenter VerticalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="true">
+                                            <Setter TargetName="Bd" Property="Background" Value="#253347"/>
+                                        </Trigger>
+                                        <Trigger Property="IsSelected" Value="true">
+                                            <Setter TargetName="Bd" Property="Background" Value="#1E293B"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </Setter.Value>
+            </Setter>
+        </Style>
 
-            <!-- Left: Chart + Daily table -->
-            <Grid Grid.Column="0" Margin="0,0,16,0">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="260"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
+        <!-- Primary Action Gradient Button -->
+        <Style x:Key="PrimaryGradientButton" TargetType="Button" BasedOn="{StaticResource MaterialDesignRaisedButton}">
+            <Setter Property="Background" Value="#2563EB"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Padding" Value="18,8"/>
+            <Setter Property="Height" Value="38"/>
+        </Style>
 
-                <!-- Daily Bar Chart -->
-                <materialDesign:Card Grid.Row="0" Background="#0D1B2A" Padding="16" Margin="0,0,0,8">
+        <!-- Export PDF Button -->
+        <Style x:Key="ExportPdfButton" TargetType="Button" BasedOn="{StaticResource MaterialDesignOutlinedButton}">
+            <Setter Property="Foreground" Value="#38BDF8"/>
+            <Setter Property="BorderBrush" Value="#38BDF8"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Padding" Value="18,8"/>
+            <Setter Property="Height" Value="38"/>
+        </Style>
+    </Window.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Margin="24">
+
+            <!-- 1. Page Header -->
+            <StackPanel Margin="0,0,0,20">
+                <TextBlock Text="History &amp; Reports" FontSize="26" FontWeight="Bold" Foreground="White" Margin="0,0,0,4"/>
+                <TextBlock Text="View historical network usage, application statistics and export reports." FontSize="14" Foreground="#94A3B8"/>
+            </StackPanel>
+
+            <!-- 2. Filter Card -->
+            <materialDesign:Card Style="{StaticResource HistoryCardStyle}" Margin="0,0,0,20" Padding="20">
+                <DockPanel>
+                    <!-- Filters Left -->
+                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Left" VerticalAlignment="Center">
+                        <materialDesign:PackIcon Kind="FilterVariant" Foreground="#38BDF8" Width="20" Height="20" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        
+                        <TextBlock Text="Year" Foreground="#94A3B8" FontSize="13" FontWeight="Medium" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <ComboBox ItemsSource="{Binding YearOptions}" SelectedItem="{Binding SelectedYear}" 
+                                  Foreground="White" Width="95" Margin="0,0,24,0" FontSize="13" FontWeight="SemiBold"
+                                  Style="{StaticResource MaterialDesignOutlinedComboBox}" Padding="10,6"/>
+                        
+                        <TextBlock Text="Month" Foreground="#94A3B8" FontSize="13" FontWeight="Medium" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <ComboBox ItemsSource="{Binding MonthOptions}" SelectedIndex="{Binding SelectedMonthIndex}" 
+                                  Foreground="White" Width="135" Margin="0,0,24,0" FontSize="13" FontWeight="SemiBold"
+                                  Style="{StaticResource MaterialDesignOutlinedComboBox}" Padding="10,6"/>
+                        
+                        <Button Style="{StaticResource PrimaryGradientButton}" Command="{Binding LoadCommand}" Content="Load History"/>
+                    </StackPanel>
+                    
+                    <!-- Action Right: Export PDF ONLY -->
+                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center">
+                        <Button Style="{StaticResource ExportPdfButton}" Command="{Binding ExportToPdfCommand}" ToolTip="Export Current Log to PDF">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="FilePdfBox" Width="18" Height="18" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="Export PDF" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </DockPanel>
+            </materialDesign:Card>
+
+            <!-- 3. Daily Usage Overview Card -->
+            <materialDesign:Card Style="{StaticResource HistoryCardStyle}" Margin="0,0,0,20" Padding="20">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                        <materialDesign:PackIcon Kind="ChartBar" Foreground="#38BDF8" Width="22" Height="22" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <TextBlock Text="Daily Usage Overview" FontSize="18" FontWeight="SemiBold" Foreground="White" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    
+                    <lvc:CartesianChart Grid.Row="1"
+                                        Series="{Binding DailyChartSeries}"
+                                        XAxes="{Binding XAxes}"
+                                        YAxes="{Binding YAxes}"
+                                        DrawMarginFrame="{Binding HistoryDrawMarginFrame}"
+                                        Background="Transparent"
+                                        Height="400"
+                                        MinHeight="380"/>
+                </Grid>
+            </materialDesign:Card>
+
+            <!-- 4 & 5. Daily Breakdown & Monthly Top Applications (2-Column Layout) -->
+            <Grid Margin="0,0,0,20">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1.1*"/>
+                    <ColumnDefinition Width="0.9*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Daily Breakdown Card -->
+                <materialDesign:Card Grid.Column="0" Style="{StaticResource HistoryCardStyle}" Margin="0,0,10,0" Padding="20">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
-                        <TextBlock Text="Daily Usage (MB)" Foreground="White" FontSize="15" FontWeight="SemiBold" Margin="0,0,0,6"/>
-                        <lvc:CartesianChart Grid.Row="1"
-                                            Series="{Binding DailyChartSeries}"
-                                            XAxes="{Binding XAxes}"
-                                            YAxes="{Binding YAxes}"
-                                            DrawMarginFrame="{Binding HistoryDrawMarginFrame}"
-                                            Background="#0D1B2A"/>
+                        
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                            <materialDesign:PackIcon Kind="CalendarClock" Foreground="#34D399" Width="20" Height="20" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <TextBlock Text="Daily Breakdown" FontSize="18" FontWeight="SemiBold" Foreground="White" VerticalAlignment="Center"/>
+                        </StackPanel>
+                        
+                        <ListView Grid.Row="1" ItemsSource="{Binding DailyRows}" Style="{StaticResource ModernListViewStyle}" MaxHeight="320">
+                            <ListView.Resources>
+                                <Style TargetType="{x:Type GridViewColumnHeader}" BasedOn="{StaticResource ModernGridViewHeaderStyle}"/>
+                            </ListView.Resources>
+                            <ListView.View>
+                                <GridView>
+                                    <GridViewColumn Header="Date" Width="140">
+                                        <GridViewColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding Date}" Foreground="White" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                            </DataTemplate>
+                                        </GridViewColumn.CellTemplate>
+                                    </GridViewColumn>
+                                    <GridViewColumn Header="Downloaded" Width="110">
+                                        <GridViewColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding Downloaded}" Foreground="#60A5FA" FontSize="13" VerticalAlignment="Center"/>
+                                            </DataTemplate>
+                                        </GridViewColumn.CellTemplate>
+                                    </GridViewColumn>
+                                    <GridViewColumn Header="Uploaded" Width="110">
+                                        <GridViewColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding Uploaded}" Foreground="#34D399" FontSize="13" VerticalAlignment="Center"/>
+                                            </DataTemplate>
+                                        </GridViewColumn.CellTemplate>
+                                    </GridViewColumn>
+                                    <GridViewColumn Header="Total Usage" Width="120">
+                                        <GridViewColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding Total}" Foreground="#F59E0B" FontSize="13" FontWeight="Bold" VerticalAlignment="Center"/>
+                                            </DataTemplate>
+                                        </GridViewColumn.CellTemplate>
+                                    </GridViewColumn>
+                                </GridView>
+                            </ListView.View>
+                        </ListView>
                     </Grid>
                 </materialDesign:Card>
 
-                <!-- Daily rows table -->
-                <materialDesign:Card Grid.Row="1" Padding="8" Margin="0,0,0,0">
+                <!-- Monthly Top Applications Card -->
+                <materialDesign:Card Grid.Column="1" Style="{StaticResource HistoryCardStyle}" Margin="10,0,0,0" Padding="20">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
-                        <TextBlock Text="Daily Breakdown" FontSize="15" FontWeight="SemiBold" Margin="8,8,0,8"/>
-                        <ListView Grid.Row="1" ItemsSource="{Binding DailyRows}" SelectionMode="Single">
+                        
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                            <materialDesign:PackIcon Kind="Apps" Foreground="#A78BFA" Width="20" Height="20" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <TextBlock Text="Monthly Top Applications" FontSize="18" FontWeight="SemiBold" Foreground="White" VerticalAlignment="Center"/>
+                        </StackPanel>
+                        
+                        <ListView Grid.Row="1" ItemsSource="{Binding ProcessRows}" Style="{StaticResource ModernListViewStyle}" MaxHeight="320">
+                            <ListView.Resources>
+                                <Style TargetType="{x:Type GridViewColumnHeader}" BasedOn="{StaticResource ModernGridViewHeaderStyle}"/>
+                            </ListView.Resources>
                             <ListView.View>
                                 <GridView>
-                                    <GridViewColumn Header="Date" DisplayMemberBinding="{Binding Date}" Width="130"/>
-                                    <GridViewColumn Header="Downloaded" DisplayMemberBinding="{Binding Downloaded}" Width="105"/>
-                                    <GridViewColumn Header="Uploaded" DisplayMemberBinding="{Binding Uploaded}" Width="105"/>
-                                    <GridViewColumn Header="Total" DisplayMemberBinding="{Binding Total}" Width="105"/>
+                                    <GridViewColumn Header="Application" Width="160">
+                                        <GridViewColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                    <Image Source="{Binding ProcessName, Converter={StaticResource ProcessIconConverter}}" 
+                                                           Width="20" Height="20" Margin="0,0,8,0" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                                    <TextBlock Text="{Binding ProcessName}" Foreground="White" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </GridViewColumn.CellTemplate>
+                                    </GridViewColumn>
+                                    <GridViewColumn Header="Downloaded" Width="95">
+                                        <GridViewColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding DownloadedText}" Foreground="#60A5FA" FontSize="13" VerticalAlignment="Center"/>
+                                            </DataTemplate>
+                                        </GridViewColumn.CellTemplate>
+                                    </GridViewColumn>
+                                    <GridViewColumn Header="Uploaded" Width="95">
+                                        <GridViewColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding UploadedText}" Foreground="#34D399" FontSize="13" VerticalAlignment="Center"/>
+                                            </DataTemplate>
+                                        </GridViewColumn.CellTemplate>
+                                    </GridViewColumn>
+                                    <GridViewColumn Header="Total Usage" Width="100">
+                                        <GridViewColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding TotalText}" Foreground="#F59E0B" FontSize="13" FontWeight="Bold" VerticalAlignment="Center"/>
+                                            </DataTemplate>
+                                        </GridViewColumn.CellTemplate>
+                                    </GridViewColumn>
                                 </GridView>
                             </ListView.View>
                         </ListView>
@@ -127,25 +318,125 @@
                 </materialDesign:Card>
             </Grid>
 
-            <!-- Right: Per-app usage -->
-            <materialDesign:Card Grid.Column="1" Padding="16">
+            <!-- 6. Network Usage History Card -->
+            <materialDesign:Card Style="{StaticResource HistoryCardStyle}" Margin="0,0,0,20" Padding="20">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
-                    <TextBlock Text="Per-App Usage" FontSize="15" FontWeight="SemiBold" Margin="0,0,0,8"/>
-                    <ListView Grid.Row="1" ItemsSource="{Binding ProcessRows}" SelectionMode="Single">
-                        <ListView.View>
-                            <GridView>
-                                <GridViewColumn Header="Application" DisplayMemberBinding="{Binding ProcessName}" Width="120"/>
-                                <GridViewColumn Header="↓ DL" DisplayMemberBinding="{Binding DownloadedText}" Width="78"/>
-                                <GridViewColumn Header="↑ UL" DisplayMemberBinding="{Binding UploadedText}" Width="78"/>
-                            </GridView>
-                        </ListView.View>
-                    </ListView>
+                    
+                    <DockPanel Grid.Row="0" Margin="0,0,0,16">
+                        <StackPanel Orientation="Horizontal" DockPanel.Dock="Left" VerticalAlignment="Center">
+                            <materialDesign:PackIcon Kind="Wifi" Foreground="#38BDF8" Width="22" Height="22" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <TextBlock Text="Network Usage History" FontSize="18" FontWeight="SemiBold" Foreground="White" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </DockPanel>
+
+                    <!-- Sub Tabs: Monthly & Today Network Usage -->
+                    <TabControl Grid.Row="1" Background="Transparent" BorderThickness="0">
+                        <TabControl.Resources>
+                            <Style TargetType="TabItem" BasedOn="{StaticResource {x:Type TabItem}}">
+                                <Setter Property="FontSize" Value="13"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                <Setter Property="Foreground" Value="#94A3B8"/>
+                                <Setter Property="Padding" Value="16,8"/>
+                            </Style>
+                        </TabControl.Resources>
+                        
+                        <TabItem Header="Selected Month Network Usage" Foreground="#38BDF8">
+                            <Grid Margin="0,12,0,0">
+                                <ListView ItemsSource="{Binding MonthlyNetworkRows}" Style="{StaticResource ModernListViewStyle}" MaxHeight="260">
+                                    <ListView.Resources>
+                                        <Style TargetType="{x:Type GridViewColumnHeader}" BasedOn="{StaticResource ModernGridViewHeaderStyle}"/>
+                                    </ListView.Resources>
+                                    <ListView.View>
+                                        <GridView>
+                                            <GridViewColumn Header="Network Name" Width="280">
+                                                <GridViewColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                            <materialDesign:PackIcon Kind="WifiCheck" Foreground="#38BDF8" Width="16" Height="16" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                                            <TextBlock Text="{Binding NetworkName}" Foreground="White" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                                        </StackPanel>
+                                                    </DataTemplate>
+                                                </GridViewColumn.CellTemplate>
+                                            </GridViewColumn>
+                                            <GridViewColumn Header="Download" Width="150">
+                                                <GridViewColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding Downloaded}" Foreground="#60A5FA" FontSize="13" VerticalAlignment="Center"/>
+                                                    </DataTemplate>
+                                                </GridViewColumn.CellTemplate>
+                                            </GridViewColumn>
+                                            <GridViewColumn Header="Upload" Width="150">
+                                                <GridViewColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding Uploaded}" Foreground="#34D399" FontSize="13" VerticalAlignment="Center"/>
+                                                    </DataTemplate>
+                                                </GridViewColumn.CellTemplate>
+                                            </GridViewColumn>
+                                            <GridViewColumn Header="Total Usage" Width="160">
+                                                <GridViewColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding Total}" Foreground="#F59E0B" FontSize="13" FontWeight="Bold" VerticalAlignment="Center"/>
+                                                    </DataTemplate>
+                                                </GridViewColumn.CellTemplate>
+                                            </GridViewColumn>
+                                        </GridView>
+                                    </ListView.View>
+                                </ListView>
+                            </Grid>
+                        </TabItem>
+
+                        <TabItem Header="Today's Live Network Usage" Foreground="#34D399">
+                            <Grid Margin="0,12,0,0">
+                                <ListView ItemsSource="{Binding NetworkRows}" Style="{StaticResource ModernListViewStyle}" MaxHeight="260">
+                                    <ListView.Resources>
+                                        <Style TargetType="{x:Type GridViewColumnHeader}" BasedOn="{StaticResource ModernGridViewHeaderStyle}"/>
+                                    </ListView.Resources>
+                                    <ListView.View>
+                                        <GridView>
+                                            <GridViewColumn Header="Network Name" Width="280">
+                                                <GridViewColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                            <materialDesign:PackIcon Kind="WifiCheck" Foreground="#34D399" Width="16" Height="16" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                                            <TextBlock Text="{Binding NetworkName}" Foreground="White" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                                        </StackPanel>
+                                                    </DataTemplate>
+                                                </GridViewColumn.CellTemplate>
+                                            </GridViewColumn>
+                                            <GridViewColumn Header="Download" Width="150">
+                                                <GridViewColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding Downloaded}" Foreground="#60A5FA" FontSize="13" VerticalAlignment="Center"/>
+                                                    </DataTemplate>
+                                                </GridViewColumn.CellTemplate>
+                                            </GridViewColumn>
+                                            <GridViewColumn Header="Upload" Width="150">
+                                                <GridViewColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding Uploaded}" Foreground="#34D399" FontSize="13" VerticalAlignment="Center"/>
+                                                    </DataTemplate>
+                                                </GridViewColumn.CellTemplate>
+                                            </GridViewColumn>
+                                            <GridViewColumn Header="Total Usage" Width="160">
+                                                <GridViewColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding Total}" Foreground="#F59E0B" FontSize="13" FontWeight="Bold" VerticalAlignment="Center"/>
+                                                    </DataTemplate>
+                                                </GridViewColumn.CellTemplate>
+                                            </GridViewColumn>
+                                        </GridView>
+                                    </ListView.View>
+                                </ListView>
+                            </Grid>
+                        </TabItem>
+                    </TabControl>
                 </Grid>
             </materialDesign:Card>
-        </Grid>
-    </Grid>
+
+        </StackPanel>
+    </ScrollViewer>
 </Window>

@@ -15,10 +15,10 @@
             </ResourceDictionary.MergedDictionaries>
 
             <!-- CUSTOM PREMIUM BRAND OVERRIDES -->
-            <SolidColorBrush x:Key="MaterialDesignPaper" Color="#0B0E14"/>
-            <SolidColorBrush x:Key="MaterialDesignCardBackground" Color="#131924"/>
-            <SolidColorBrush x:Key="MaterialDesignBody" Color="#E2E8F0"/>
-            <SolidColorBrush x:Key="MaterialDesignBodyLight" Color="#718096"/>
+<SolidColorBrush x:Key="MaterialDesignPaper" Color="#0B1220"/>
+    <SolidColorBrush x:Key="MaterialDesignCardBackground" Color="#161F2F"/>
+    <SolidColorBrush x:Key="MaterialDesignBody" Color="#F8FAFC"/>
+    <SolidColorBrush x:Key="MaterialDesignBodyLight" Color="#94A3B8"/>
             
             <SolidColorBrush x:Key="PrimaryHueMidBrush" Color="#00E5FF"/>
             <SolidColorBrush x:Key="PrimaryHueMidForegroundBrush" Color="#0B0E14"/>
@@ -27,6 +27,13 @@
             <SolidColorBrush x:Key="SidebarSelectedBackground" Color="#171E2D"/>
             <SolidColorBrush x:Key="MainHeaderBackground" Color="#0F131D"/>
             <SolidColorBrush x:Key="CardInternalBackground" Color="#171E2D"/>
-        </ResourceDictionary>
+                    <SolidColorBrush x:Key="CardBorderBrush" Color="#2A364B"/>
+            <SolidColorBrush x:Key="AccentBlue" Color="#3B82F6"/>
+            <SolidColorBrush x:Key="AccentPurple" Color="#A855F7"/>
+            <SolidColorBrush x:Key="AccentGreen" Color="#22C55E"/>
+            <SolidColorBrush x:Key="AccentOrange" Color="#F59E0B"/>
+            <SolidColorBrush x:Key="AccentCyan" Color="#06B6D4"/>
+            <SolidColorBrush x:Key="Gray" Color="#6B7280"/>
+            </ResourceDictionary>
     </Application.Resources>
 </Application>

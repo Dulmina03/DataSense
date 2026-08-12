@@ -19,6 +19,7 @@ using LiveChartsCore.SkiaSharpView.Painting;
 using Microsoft.Extensions.DependencyInjection;
 using SkiaSharp;
 using DataSense.UI.Services;
+using System.Threading;
 
 namespace DataSense.UI.ViewModels
 {
@@ -28,6 +29,11 @@ namespace DataSense.UI.ViewModels
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly StartupService _startupService;
         private readonly SpeedTestService _speedTestService;
+        private readonly NetSpeedMeterService _netSpeedMeterService;
+        private readonly IPacketCaptureService _packetCaptureService;
+        private readonly DispatcherTimer _statsRefreshTimer;
+        private readonly DispatcherTimer _monthlyRefreshTimer;
+
         partial void OnSelectedTabIndexChanged(int value)
         {
             if (value == 1) // History Tab
@@ -47,6 +53,14 @@ namespace DataSense.UI.ViewModels
         [ObservableProperty] private bool _isSidebarCollapsed = false;
         [ObservableProperty] private bool _isNetSpeedMeterEnabled;
         [ObservableProperty] private bool _isNetSpeedMeterPinned;
+        [ObservableProperty] private int _activeAppsCount;
+
+        // Connection Details card
+        [ObservableProperty] private string _connNetworkType = "—";
+        [ObservableProperty] private string _connSignalStrength = "—";
+        [ObservableProperty] private string _connIpAddress = "—";
+        [ObservableProperty] private string _connDnsServer = "—";
+        [ObservableProperty] private string _connGateway = "—";
 
         public string[] NetSpeedMeterAvailableColors => _netSpeedMeterService.AvailableColors;
         public double[] NetSpeedMeterAvailableFontSizes => _netSpeedMeterService.AvailableFontSizes;
@@ -134,15 +148,24 @@ namespace DataSense.UI.ViewModels
         // Adapter list
         public ObservableCollection<NetworkAdapterInfo> AvailableAdapters { get; } = new();
         [ObservableProperty] private NetworkAdapterInfo? _selectedAdapter;
+        [ObservableProperty] private string _currentNetworkName = DataSense.Core.Services.SsidMonitorService.CurrentNetworkName;
 
         // Chart collections (Speed & Peak Monthly)
         public ObservableCollection<ISeries> SpeedSeries { get; set; }
         public ObservableCollection<Axis> SpeedXAxes { get; } = new();
         public ObservableCollection<Axis> SpeedYAxes { get; } = new();
 
+        public ObservableCollection<ISeries> DownloadSparklineSeries { get; } = new();
+        public ObservableCollection<ISeries> UploadSparklineSeries { get; } = new();
+        public ObservableCollection<Axis> SparklineXAxes { get; } = new();
+        public ObservableCollection<Axis> SparklineYAxes { get; } = new();
+
         public ObservableCollection<ISeries> PeakMonthlySeries { get; } = new();
         public ObservableCollection<Axis> PeakMonthlyXAxes { get; } = new();
         public ObservableCollection<Axis> PeakMonthlyYAxes { get; } = new();
+        public ObservableCollection<ISeries> TodayDoughnutSeries { get; } = new();
+
+        public ObservableCollection<ISeries> MonthlyDoughnutSeries { get; } = new();
 
         // Dark canvas backgrounds for each chart
         public DrawMarginFrame SpeedDrawMarginFrame { get; } = new DrawMarginFrame
@@ -157,10 +180,8 @@ namespace DataSense.UI.ViewModels
         };
 
         public ObservableCollection<ProcessUsageDisplay> TopProcesses { get; set; }
-
-        private readonly DispatcherTimer _statsRefreshTimer;
-        private readonly NetSpeedMeterService _netSpeedMeterService;
-        private readonly IPacketCaptureService _packetCaptureService;
+        public ObservableCollection<ProcessUsageDisplay> TodayTopProcesses { get; } = new();
+        public ObservableCollection<ProcessUsageDisplay> MonthlyTopProcesses { get; } = new();
 
         private long _todayBytesAcc;
         private long _weeklyBytesAcc;
@@ -273,20 +294,20 @@ namespace DataSense.UI.ViewModels
             {
                 Values = new ObservableCollection<ObservableValue>(),
                 Name = "Download Speed",
-                Stroke = new SolidColorPaint(SKColors.Cyan) { StrokeThickness = 2.5f },
-                Fill = new LinearGradientPaint(new[] { new SKColor(0, 229, 255, 80), new SKColor(0, 229, 255, 0) }, new SKPoint(0.5f, 0), new SKPoint(0.5f, 1)),
+                Stroke = new SolidColorPaint(new SKColor(0, 191, 255)) { StrokeThickness = 3.0f },
+                Fill = new LinearGradientPaint(new[] { new SKColor(0, 191, 255, 70), new SKColor(0, 191, 255, 0) }, new SKPoint(0.5f, 0), new SKPoint(0.5f, 1)),
                 GeometrySize = 0,
-                LineSmoothness = 0.5
+                LineSmoothness = 0.65
             };
 
             var ulLine = new LineSeries<ObservableValue>
             {
                 Values = new ObservableCollection<ObservableValue>(),
                 Name = "Upload Speed",
-                Stroke = new SolidColorPaint(SKColors.DeepPink) { StrokeThickness = 2.5f },
-                Fill = new LinearGradientPaint(new[] { new SKColor(233, 30, 99, 80), new SKColor(233, 30, 99, 0) }, new SKPoint(0.5f, 0), new SKPoint(0.5f, 1)),
+                Stroke = new SolidColorPaint(new SKColor(156, 39, 176)) { StrokeThickness = 3.0f },
+                Fill = new LinearGradientPaint(new[] { new SKColor(156, 39, 176, 70), new SKColor(156, 39, 176, 0) }, new SKPoint(0.5f, 0), new SKPoint(0.5f, 1)),
                 GeometrySize = 0,
-                LineSmoothness = 0.5
+                LineSmoothness = 0.65
             };
 
             SpeedSeries = new ObservableCollection<ISeries> { dlLine, ulLine };
@@ -295,6 +316,37 @@ namespace DataSense.UI.ViewModels
             {
                 ((ObservableCollection<ObservableValue>)SpeedSeries[0].Values!).Add(new ObservableValue(0));
                 ((ObservableCollection<ObservableValue>)SpeedSeries[1].Values!).Add(new ObservableValue(0));
+            }
+
+            // Sparklines init (20 points, hidden axes)
+            SparklineXAxes.Add(new Axis { IsVisible = false, ShowSeparatorLines = false });
+            SparklineYAxes.Add(new Axis { IsVisible = false, ShowSeparatorLines = false });
+
+            var dlSparkLine = new LineSeries<ObservableValue>
+            {
+                Values = new ObservableCollection<ObservableValue>(),
+                Stroke = new SolidColorPaint(SKColors.Cyan) { StrokeThickness = 1.5f },
+                Fill = new LinearGradientPaint(new[] { new SKColor(0, 229, 255, 50), new SKColor(0, 229, 255, 0) }, new SKPoint(0.5f, 0), new SKPoint(0.5f, 1)),
+                GeometrySize = 0,
+                LineSmoothness = 0.5
+            };
+
+            var ulSparkLine = new LineSeries<ObservableValue>
+            {
+                Values = new ObservableCollection<ObservableValue>(),
+                Stroke = new SolidColorPaint(SKColors.DeepPink) { StrokeThickness = 1.5f },
+                Fill = new LinearGradientPaint(new[] { new SKColor(233, 30, 99, 50), new SKColor(233, 30, 99, 0) }, new SKPoint(0.5f, 0), new SKPoint(0.5f, 1)),
+                GeometrySize = 0,
+                LineSmoothness = 0.5
+            };
+
+            DownloadSparklineSeries.Add(dlSparkLine);
+            UploadSparklineSeries.Add(ulSparkLine);
+
+            for (int i = 0; i < 20; i++)
+            {
+                ((ObservableCollection<ObservableValue>)dlSparkLine.Values!).Add(new ObservableValue(0));
+                ((ObservableCollection<ObservableValue>)ulSparkLine.Values!).Add(new ObservableValue(0));
             }
 
             // Peak Monthly chart axes — dark themed
@@ -333,7 +385,7 @@ namespace DataSense.UI.ViewModels
 
             _aggregator.SpeedUpdated += OnSpeedUpdated;
 
-            // Timer to refresh summaries, limits, and charts
+            // Timer for real‑time stats (updates every 2 seconds)
             _statsRefreshTimer = new DispatcherTimer
             {
                 Interval = TimeSpan.FromSeconds(2)
@@ -341,11 +393,72 @@ namespace DataSense.UI.ViewModels
             _statsRefreshTimer.Tick += async (s, e) => await RefreshStatsAsync();
             _statsRefreshTimer.Start();
 
+            // Timer for monthly aggregates (updates every 30 seconds)
+            _monthlyRefreshTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromSeconds(30)
+            };
+            _monthlyRefreshTimer.Tick += async (s, e) => await RefreshMonthlyStatsAsync();
+            _monthlyRefreshTimer.Start();
+
             // Load custom settings
             LoadCustomSettings();
 
             // Initial load
             var _ = RefreshStatsAsync();
+
+            // Load initial connection details
+            RefreshConnectionDetails();
+
+            // Refresh every 60s as a fallback
+            var _connTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(60) };
+            _connTimer.Tick += (s, e) => RefreshConnectionDetails();
+            _connTimer.Start();
+
+            // Also refresh immediately whenever the network address changes (adapter switch, IP change, WiFi handoff)
+            System.Net.NetworkInformation.NetworkChange.NetworkAddressChanged += OnNetworkChanged;
+            System.Net.NetworkInformation.NetworkChange.NetworkAvailabilityChanged += OnNetworkAvailabilityChanged;
+        }
+
+        private System.Threading.CancellationTokenSource? _networkChangeCts;
+
+        private void OnNetworkChanged(object? sender, EventArgs e)
+        {
+            // Debounce: rapid adapter events can fire multiple times — wait 1.5s before refreshing
+            _networkChangeCts?.Cancel();
+            _networkChangeCts = new System.Threading.CancellationTokenSource();
+            var token = _networkChangeCts.Token;
+            Task.Delay(1500, token).ContinueWith(t =>
+            {
+                if (!t.IsCanceled) RefreshConnectionDetails();
+            }, TaskScheduler.Default);
+        }
+
+        private void OnNetworkAvailabilityChanged(object? sender, System.Net.NetworkInformation.NetworkAvailabilityEventArgs e)
+        {
+            RefreshConnectionDetails();
+        }
+
+        private void RefreshConnectionDetails()
+        {
+            Task.Run(() =>
+            {
+                var d = _networkService.GetConnectionDetails();
+                var realSsid = DataSense.Core.Services.SsidMonitorService.CurrentNetworkName;
+                App.Current?.Dispatcher.InvokeAsync(() =>
+                {
+                    CurrentNetworkName = string.IsNullOrEmpty(realSsid) ? "Active Network" : realSsid;
+                    if (SelectedAdapter != null)
+                    {
+                        SelectedAdapter.NetworkName = CurrentNetworkName;
+                    }
+                    ConnNetworkType = d.NetworkType;
+                    ConnSignalStrength = d.SignalStrength;
+                    ConnIpAddress = d.IpAddress;
+                    ConnDnsServer = d.DnsServer;
+                    ConnGateway = d.Gateway;
+                });
+            });
         }
 
         private void OnSpeedUpdated(long downloadBps, long uploadBps)
@@ -384,8 +497,26 @@ namespace DataSense.UI.ViewModels
                     dlValues.RemoveAt(0);
                     ulValues.RemoveAt(0);
                 }
+
+                // Feed independent 20-point sparkline series
+                if (DownloadSparklineSeries.Count > 0 && UploadSparklineSeries.Count > 0)
+                {
+                    var dlSparkValues = (ObservableCollection<ObservableValue>)((LineSeries<ObservableValue>)DownloadSparklineSeries[0]).Values!;
+                    var ulSparkValues = (ObservableCollection<ObservableValue>)((LineSeries<ObservableValue>)UploadSparklineSeries[0]).Values!;
+
+                    dlSparkValues.Add(new ObservableValue(downloadBps / 1048576.0));
+                    ulSparkValues.Add(new ObservableValue(uploadBps / 1048576.0));
+
+                    if (dlSparkValues.Count > 20)
+                    {
+                        dlSparkValues.RemoveAt(0);
+                        ulSparkValues.RemoveAt(0);
+                    }
+                }
             });
         }
+
+        private Dictionary<string, long> _monthlyProcessTotals = new();
 
         private void UpdateTopProcesses(Dictionary<string, (long downloaded, long uploaded)>? dailyDbTotals = null)
         {
@@ -413,26 +544,102 @@ namespace DataSense.UI.ViewModels
                             .Take(5)
                             .ToList();
 
+            long sumTodayBytes = top.Sum(p => p.Value.downloaded + p.Value.uploaded);
+            if (sumTodayBytes == 0) sumTodayBytes = 1;
+
+            ActiveAppsCount = top.Count;
             TopProcesses.Clear();
-            long maxBytes = top.Any() ? top.Max(p => p.Value.downloaded + p.Value.uploaded) : 1;
+            TodayTopProcesses.Clear();
+            TodayDoughnutSeries.Clear();
 
             foreach (var item in top)
             {
                 long totalBytes = item.Value.downloaded + item.Value.uploaded;
-                // Live speed from in-memory only
-                long speedBps = liveStats.TryGetValue(item.Key, out var live)
-                    ? (live.BytesDownloaded + live.BytesUploaded) / 5
+                
+                long dlSpeedBps = liveStats.TryGetValue(item.Key, out var live)
+                    ? live.BytesDownloaded / 5
                     : 0;
 
-                TopProcesses.Add(new ProcessUsageDisplay
+                long ulSpeedBps = liveStats.TryGetValue(item.Key, out var liveUl)
+                    ? liveUl.BytesUploaded / 5
+                    : 0;
+
+                _monthlyProcessTotals.TryGetValue(item.Key, out long monthlyBytes);
+
+                double pct = ((double)totalBytes / sumTodayBytes) * 100.0;
+
+                var display = new ProcessUsageDisplay
                 {
                     ProcessName = item.Key,
-                    DownloadedText = FormatBytes(item.Value.downloaded),
-                    UploadedText = FormatBytes(item.Value.uploaded),
-                    TotalText = FormatBytes(totalBytes),
-                    SpeedText = FormatBytes(speedBps) + "/s",
-                    SpeedProgress = ((double)totalBytes / maxBytes) * 100.0
+                    DownloadBytes = item.Value.downloaded,
+                    UploadBytes = item.Value.uploaded,
+                    TodayBytes = totalBytes,
+                    MonthlyBytes = Math.Max(monthlyBytes, totalBytes),
+                    DownloadSpeedBps = dlSpeedBps,
+                    UploadSpeedBps = ulSpeedBps,
+                    Percentage = pct
+                };
+
+                TopProcesses.Add(display);
+                TodayTopProcesses.Add(display);
+
+                string hexColor = DataSense.UI.Converters.ProcessColorConverter.GetHexColor(item.Key);
+                if (SKColor.TryParse(hexColor, out var skColor))
+                {
+                    TodayDoughnutSeries.Add(new PieSeries<double>
+                    {
+                        Values = new[] { (double)totalBytes },
+                        Name = item.Key,
+                        InnerRadius = 35,
+                        Fill = new SolidColorPaint(skColor),
+                        ToolTipLabelFormatter = (point) => FormatBytes((long)point.Model)
+                    });
+                }
+            }
+        }
+
+        private async Task RefreshMonthlyStatsAsync()
+        {
+            using var scope = _scopeFactory.CreateScope();
+            var repo = scope.ServiceProvider.GetRequiredService<IUsageRepository>();
+            var now = DateTime.Now;
+
+            var stats = await repo.GetProcessUsagesForMonthAsync(now.Year, now.Month);
+            _monthlyProcessTotals = stats.ToDictionary(s => s.ProcessName, s => s.Stats.BytesDownloaded + s.Stats.BytesUploaded);
+
+            var top = stats.OrderByDescending(p => p.Stats.BytesDownloaded + p.Stats.BytesUploaded).Take(5).ToList();
+            long sumMonthlyBytes = top.Sum(p => p.Stats.BytesDownloaded + p.Stats.BytesUploaded);
+            if (sumMonthlyBytes == 0) sumMonthlyBytes = 1;
+
+            MonthlyTopProcesses.Clear();
+            MonthlyDoughnutSeries.Clear();
+
+            foreach (var p in top)
+            {
+                long totalBytes = p.Stats.BytesDownloaded + p.Stats.BytesUploaded;
+                double pct = ((double)totalBytes / sumMonthlyBytes) * 100.0;
+
+                MonthlyTopProcesses.Add(new ProcessUsageDisplay
+                {
+                    ProcessName = p.ProcessName,
+                    DownloadBytes = p.Stats.BytesDownloaded,
+                    UploadBytes = p.Stats.BytesUploaded,
+                    MonthlyBytes = totalBytes,
+                    Percentage = pct
                 });
+
+                string hexColor = DataSense.UI.Converters.ProcessColorConverter.GetHexColor(p.ProcessName);
+                if (SKColor.TryParse(hexColor, out var skColor))
+                {
+                    MonthlyDoughnutSeries.Add(new PieSeries<double>
+                    {
+                        Values = new[] { (double)totalBytes },
+                        Name = p.ProcessName,
+                        InnerRadius = 35,
+                        Fill = new SolidColorPaint(skColor),
+                        ToolTipLabelFormatter = (point) => FormatBytes((long)point.Model)
+                    });
+                }
             }
         }
 
@@ -440,6 +647,16 @@ namespace DataSense.UI.ViewModels
         {
             try
             {
+                var activeSsid = DataSense.Core.Services.SsidMonitorService.CurrentNetworkName;
+                if (!string.IsNullOrEmpty(activeSsid))
+                {
+                    CurrentNetworkName = activeSsid;
+                    if (SelectedAdapter != null)
+                    {
+                        SelectedAdapter.NetworkName = activeSsid;
+                    }
+                }
+
                 using var scope = _scopeFactory.CreateScope();
                 var repo = scope.ServiceProvider.GetRequiredService<IUsageRepository>();
 
@@ -533,8 +750,7 @@ namespace DataSense.UI.ViewModels
                     SeparatorsPaint = new SolidColorPaint(new SKColor(45, 55, 72)) { StrokeThickness = 1 }
                 });
 
-                // 5. Update Custom Time Period Stats in real time
-                await QueryCustomPeriodUsageAsync();
+
             }
             catch (Exception ex)
             {
@@ -817,7 +1033,7 @@ namespace DataSense.UI.ViewModels
             return 120 + Math.Min(30.0, ((speed - 1000.0) / 1000.0) * 30.0);
         }
 
-        private static string FormatBytes(long bytes)
+        public static string FormatBytes(long bytes)
         {
             string[] sizes = { "B", "KB", "MB", "GB", "TB" };
             double len = bytes;
@@ -915,11 +1131,45 @@ namespace DataSense.UI.ViewModels
 
     public class ProcessUsageDisplay
     {
+        private string? _downloadedText;
+        private string? _uploadedText;
+        private string? _totalText;
+
         public string ProcessName { get; set; } = string.Empty;
-        public string DownloadedText { get; set; } = string.Empty;
-        public string UploadedText { get; set; } = string.Empty;
-        public string TotalText { get; set; } = string.Empty;
-        public string SpeedText { get; set; } = string.Empty;
+        public long DownloadBytes { get; set; }
+        public long UploadBytes { get; set; }
+        public long TodayBytes { get; set; }
+        public long MonthlyBytes { get; set; }
+        public long DownloadSpeedBps { get; set; }
+        public long UploadSpeedBps { get; set; }
+        public double Percentage { get; set; }
         public double SpeedProgress { get; set; }
+
+        public long TotalBytes => DownloadBytes + UploadBytes > 0 ? DownloadBytes + UploadBytes : (TodayBytes > 0 ? TodayBytes : MonthlyBytes);
+
+        public string DownloadedText
+        {
+            get => !string.IsNullOrEmpty(_downloadedText) ? _downloadedText : MainViewModel.FormatBytes(DownloadBytes);
+            set => _downloadedText = value;
+        }
+
+        public string UploadedText
+        {
+            get => !string.IsNullOrEmpty(_uploadedText) ? _uploadedText : MainViewModel.FormatBytes(UploadBytes);
+            set => _uploadedText = value;
+        }
+
+        public string TotalText
+        {
+            get => !string.IsNullOrEmpty(_totalText) ? _totalText : MainViewModel.FormatBytes(TotalBytes);
+            set => _totalText = value;
+        }
+
+        public string TodayUsageText => MainViewModel.FormatBytes(TodayBytes);
+        public string MonthlyUsageText => MainViewModel.FormatBytes(MonthlyBytes);
+        public string SpeedText => MainViewModel.FormatBytes(DownloadSpeedBps + UploadSpeedBps) + "/s";
+        public string DownloadSpeedText => MainViewModel.FormatBytes(DownloadSpeedBps) + "/s";
+        public string UploadSpeedText => MainViewModel.FormatBytes(UploadSpeedBps) + "/s";
+        public string PercentageText => $"{Percentage:F1}%";
     }
 }

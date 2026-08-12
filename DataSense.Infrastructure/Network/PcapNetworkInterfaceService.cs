@@ -6,6 +6,7 @@ using System.Net.NetworkInformation;
 using System.Text;
 using DataSense.Core.Domain;
 using DataSense.Core.Interfaces;
+using DataSense.Core.Services;
 using SharpPcap;
 
 namespace DataSense.Infrastructure.Network
@@ -32,45 +33,6 @@ namespace DataSense.Infrastructure.Network
             return list;
         }
 
-        public static string? GetActiveWifiSsid()
-        {
-            try
-            {
-                var psi = new ProcessStartInfo("netsh", "wlan show interfaces")
-                {
-                    RedirectStandardOutput = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                    StandardOutputEncoding = Encoding.UTF8
-                };
-                using var proc = Process.Start(psi);
-                if (proc != null)
-                {
-                    string output = proc.StandardOutput.ReadToEnd();
-                    proc.WaitForExit(2000);
-                    foreach (var rawLine in output.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries))
-                    {
-                        var line = rawLine.Trim();
-                        if (line.StartsWith("SSID", StringComparison.OrdinalIgnoreCase) && 
-                           !line.StartsWith("AP BSSID", StringComparison.OrdinalIgnoreCase) &&
-                           !line.StartsWith("BSSID", StringComparison.OrdinalIgnoreCase))
-                        {
-                            int colonIdx = line.IndexOf(':');
-                            if (colonIdx >= 0 && colonIdx < line.Length - 1)
-                            {
-                                string ssid = line.Substring(colonIdx + 1).Trim();
-                                if (!string.IsNullOrEmpty(ssid))
-                                {
-                                    return ssid;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            catch { }
-            return null;
-        }
 
         private string GetNetworkProfileName(string deviceName, string description)
         {
@@ -79,12 +41,12 @@ namespace DataSense.Infrastructure.Network
                                description.Contains("802.11", StringComparison.OrdinalIgnoreCase) ||
                                description.Contains("WLAN", StringComparison.OrdinalIgnoreCase);
 
-            string? wifiSsid = isWireless ? GetActiveWifiSsid() : null;
-            if (!string.IsNullOrEmpty(wifiSsid))
-            {
-                return wifiSsid;
-            }
+            // For wireless adapters, always return the cached SSID from SsidMonitorService
+            // (which already did the netsh call in the background).
+            if (isWireless)
+                return DataSense.Core.Services.SsidMonitorService.CurrentNetworkName;
 
+            // For Ethernet-type adapters: try NLM COM API for friendly profile name
             try
             {
                 string guidStr = "";
@@ -93,9 +55,7 @@ namespace DataSense.Infrastructure.Network
                 {
                     int endIdx = deviceName.IndexOf('}', idx);
                     if (endIdx > idx)
-                    {
                         guidStr = deviceName.Substring(idx, endIdx - idx + 1);
-                    }
                 }
 
                 if (!string.IsNullOrEmpty(guidStr))
@@ -114,56 +74,15 @@ namespace DataSense.Infrastructure.Network
                                 var network = conn.GetNetwork();
                                 string name = network.GetName();
                                 if (!string.IsNullOrWhiteSpace(name) && !name.Equals("Unknown Network", StringComparison.OrdinalIgnoreCase))
-                                {
-                                    return name;
-                                }
+                                    return "Ethernet";  // Ethernet connection — just label it Ethernet
                             }
-                        }
-                    }
-                }
-            }
-            catch
-            {
-            }
-
-            try
-            {
-                string guidStr = "";
-                int idx = deviceName.IndexOf('{');
-                if (idx >= 0)
-                {
-                    int endIdx = deviceName.IndexOf('}', idx);
-                    if (endIdx > idx)
-                    {
-                        guidStr = deviceName.Substring(idx + 1, endIdx - idx - 1);
-                    }
-                }
-                if (!string.IsNullOrEmpty(guidStr))
-                {
-                    foreach (var netInterface in NetworkInterface.GetAllNetworkInterfaces())
-                    {
-                        if (netInterface.Id.Equals(guidStr, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if (netInterface.NetworkInterfaceType == NetworkInterfaceType.Wireless80211)
-                            {
-                                var ssid = GetActiveWifiSsid();
-                                if (!string.IsNullOrEmpty(ssid)) return ssid;
-                            }
-                            return netInterface.Name;
                         }
                     }
                 }
             }
             catch { }
 
-            // Final fallback
-            var activeSsid = GetActiveWifiSsid();
-            if (!string.IsNullOrEmpty(activeSsid))
-            {
-                return activeSsid;
-            }
-
-            return "Connected Network";
+            return DataSense.Core.Services.SsidMonitorService.CurrentNetworkName;
         }
 
         public IEnumerable<string> GetLocalIpAddresses()
@@ -182,6 +101,83 @@ namespace DataSense.Infrastructure.Network
                 }
             }
             return ipList;
+        }
+
+        public NetworkConnectionDetails GetConnectionDetails()
+        {
+            var details = new NetworkConnectionDetails();
+
+            try
+            {
+                // Find best active non-loopback interface
+                var activeInterface = NetworkInterface.GetAllNetworkInterfaces()
+                    .Where(n => n.OperationalStatus == OperationalStatus.Up &&
+                                n.NetworkInterfaceType != NetworkInterfaceType.Loopback &&
+                                n.NetworkInterfaceType != NetworkInterfaceType.Tunnel)
+                    .OrderByDescending(n => n.NetworkInterfaceType == NetworkInterfaceType.Wireless80211 ? 2 :
+                                           n.NetworkInterfaceType == NetworkInterfaceType.Ethernet ? 1 : 0)
+                    .FirstOrDefault();
+
+                if (activeInterface != null)
+                {
+                    // Network Type
+                    if (activeInterface.NetworkInterfaceType == NetworkInterfaceType.Wireless80211)
+                        details.NetworkType = "Wi-Fi";
+                    else if (activeInterface.NetworkInterfaceType == NetworkInterfaceType.Ethernet)
+                        details.NetworkType = "Ethernet";
+                    else
+                        details.NetworkType = activeInterface.NetworkInterfaceType.ToString();
+
+                    var ipProps = activeInterface.GetIPProperties();
+
+                    // IPv4 address
+                    var ipv4 = ipProps.UnicastAddresses
+                        .FirstOrDefault(a => a.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork);
+                    details.IpAddress = ipv4?.Address.ToString() ?? "—";
+
+                    // Gateway
+                    var gw = ipProps.GatewayAddresses
+                        .FirstOrDefault(g => g.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork);
+                    details.Gateway = gw?.Address.ToString() ?? "—";
+
+                    // DNS
+                    var dns = ipProps.DnsAddresses
+                        .FirstOrDefault(d => d.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork);
+                    details.DnsServer = dns?.ToString() ?? "—";
+                }
+            }
+            catch { }
+
+            // Signal Strength (Wi-Fi only via netsh)
+            try
+            {
+                var psi = new ProcessStartInfo("netsh", "wlan show interfaces")
+                {
+                    RedirectStandardOutput = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    StandardOutputEncoding = Encoding.UTF8
+                };
+                using var proc = Process.Start(psi);
+                if (proc != null)
+                {
+                    string output = proc.StandardOutput.ReadToEnd();
+                    proc.WaitForExit(2000);
+                    foreach (var rawLine in output.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries))
+                    {
+                        var line = rawLine.Trim();
+                        if (line.StartsWith("Signal", StringComparison.OrdinalIgnoreCase))
+                        {
+                            int colonIdx = line.IndexOf(':');
+                            if (colonIdx >= 0)
+                                details.SignalStrength = line.Substring(colonIdx + 1).Trim();
+                        }
+                    }
+                }
+            }
+            catch { }
+
+            return details;
         }
     }
 }
